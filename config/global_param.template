@@ -1,0 +1,101 @@
+#######################################################################
+# Simulation Parameters
+#######################################################################
+MODEL_STEPS_PER_DAY   <NSTEPSPDAY>     # number of model time steps per day (set to 1 if FULL_ENERGY = FALSE, set to > 1 if FULL_ENERGY = TRUE)
+SNOW_STEPS_PER_DAY    <NSTEPSPDAY>     # number of time steps per day for which to solve the snow model (should = MODEL_STEPS_PER_DAY if MODEL_STEPS_PER_DAY > 1)
+RUNOFF_STEPS_PER_DAY  <NSTEPSPDAY>     # time step in hours for which to solve the runoff model (should be >= MODEL_STEPS_PER_DAY)
+STARTYEAR             <STARTYEAR>   # year model simulation starts
+STARTMONTH            01     # month model simulation starts
+STARTDAY              01     # day model simulation starts
+ENDYEAR               <ENDYEAR>   # year model simulation ends
+ENDMONTH              12     # month model simulation ends
+ENDDAY                31     # day model simulation ends
+CALENDAR             PROLEPTIC_GREGORIAN
+
+NODES                 3      # number of soil thermal nodes
+FULL_ENERGY           TRUE  # TRUE = calculate full energy balance; FALSE = compute water balance only
+FROZEN_SOIL           FALSE  # TRUE = calculate frozen soils
+AERO_RESIST_CANSNOW AR_406
+
+DOMAIN         <DOMAIN_FILE>
+DOMAIN_TYPE    LAT     lat
+DOMAIN_TYPE    LON     lon
+DOMAIN_TYPE    MASK    mask
+DOMAIN_TYPE    AREA    area
+DOMAIN_TYPE    FRAC    frac
+DOMAIN_TYPE    YDIM    lat
+DOMAIN_TYPE    XDIM    lon
+
+#######################################################################
+# Forcing Files
+#######################################################################
+FORCING1             <FORCING_DIR>/<FORCING_PFX>.   # Forcing file path and prefix, ending in "_"
+FORCE_TYPE           PREC     prec
+FORCE_TYPE           AIR_TEMP temp
+FORCE_TYPE           SWDOWN   shortwave
+FORCE_TYPE           LWDOWN   longwave
+FORCE_TYPE           PRESSURE air_pressure
+FORCE_TYPE           VP       vapor_pressure
+FORCE_TYPE           WIND     wind
+WIND_H               10.0  # height of wind speed measurement (m)
+
+<VH_COMMENT>FORCING2             <VEGHIST_DIR>/<VEGHIST_PFX>.   # Forcing file path and prefix, ending in "_"
+<VH_COMMENT>FORCE_TYPE           LAI     LAI
+<VH_COMMENT>FORCE_TYPE           FCANOPY fcanopy
+<VH_COMMENT>FORCE_TYPE           ALBEDO  albedo
+
+#######################################################################
+# Land Surface Parameters
+#######################################################################
+PARAMETERS      <PARAM_FILE>
+NODES           3
+SNOW_BAND       TRUE
+LAI_SRC         <LAI_SRC>
+FCAN_SRC        <FCAN_SRC>
+ALB_SRC         <ALB_SRC>
+
+#######################################################################
+# Initial State
+#######################################################################
+<INIT_COMMENT>INIT_STATE      <INIT_STATE>
+
+#######################################################################
+# Save State
+#######################################################################
+STATENAME      <STATENAME>
+STATEYEAR      <STATEYEAR>
+STATEMONTH     <STATEMONTH>
+STATEDAY       <STATEDAY>
+STATESEC       00000
+
+#######################################################################
+# Output Files and Parameters
+#######################################################################
+RESULT_DIR  <RESULT_DIR>
+OUTFILE     fluxes
+COMPRESS    FALSE
+OUT_FORMAT  NETCDF4
+AGGFREQ     NMONTHS 1
+HISTFREQ    NYEARS 1
+OUTVAR		OUT_PREC
+OUTVAR		OUT_EVAP
+OUTVAR		OUT_EVAP_CANOP
+OUTVAR		OUT_TRANSP_VEG
+OUTVAR		OUT_EVAP_BARE
+OUTVAR		OUT_RUNOFF
+OUTVAR		OUT_BASEFLOW
+OUTVAR		OUT_WDEW
+OUTVAR		OUT_SNOW_CANOPY
+OUTVAR		OUT_SWE
+OUTVAR		OUT_SOIL_MOIST
+OUTVAR		OUT_ALBEDO
+OUTVAR		OUT_AIR_TEMP
+OUTVAR		OUT_SURF_TEMP
+OUTVAR		OUT_LATENT
+OUTVAR		OUT_SENSIBLE
+OUTVAR		OUT_SWNET
+OUTVAR		OUT_LWNET
+OUTVAR		OUT_GRND_FLUX
+OUTVAR		OUT_SNOW_FLUX
+OUTVAR		OUT_DELTAH
+OUTVAR		OUT_DELTACC

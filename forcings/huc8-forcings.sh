@@ -30,3 +30,5 @@ do
   # echo $SLURM_PROCID "${file_list[i]}"
   python huc8-forcings.py "${file_list[i]}"
 done
+
+echo 'Done'

@@ -6,19 +6,11 @@ import glob
 import time
 import sys
 
-def subset_file(fn):
-
-  input_dir = 'tgw-conus-forcings'
-  output_dir = 'tgw-huc8-forcings'
+def subset_file(fn, output_dir):
 
   start_time = time.time()
 
   huc8_shp = read_dataframe("../data/HUC8_CONUS/HUC8_US.shp")
-
-  #forcing_files = glob.glob(f'{input_dir}/*.nc')
-  #forcing_files.sort()
-  #fn = forcing_files[i]
-
   forcings = xr.open_dataset(fn)
   week = os.path.basename(fn)[24:34]
 
@@ -50,4 +42,5 @@ def subset_file(fn):
   print(f"Processing completed in {runtime} minutes for file {os.path.basename(fn)}")
 
 if __name__ == "__main__":
-  subset_file(sys.argv[1])
+  output_dir = 'tgw-huc8-forcings'
+  subset_file(sys.argv[1], output_dir)

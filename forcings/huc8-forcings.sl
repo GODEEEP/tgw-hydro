@@ -15,3 +15,5 @@ source /share/apps/python/miniconda3.9/etc/profile.d/conda.sh
 conda activate vic
 
 srun huc8-forcings.sh
+
+echo 'Really Done'

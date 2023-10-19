@@ -27,6 +27,7 @@ for i, huc8 in tqdm(huc8_shp.iterrows(), total=len(huc8_shp.geometry)):
     for j in range(len(mask.lat)):
       mask[j, i] = int(geometry.contains(Point(mask.lon[i], mask.lat[j])))
       for k in range(len(root_fract.veg_class)):
+        # root fraction was throwing errors so renormalize
         root_fract[k, :, j, i] = root_fract[k, :, j, i]/sum(root_fract[k, :, j, i])
 
   subdomain['mask'] = mask

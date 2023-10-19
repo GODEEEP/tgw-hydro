@@ -6,7 +6,7 @@ from pyogrio import read_dataframe
 import geopandas as gpd
 from tqdm import tqdm
 
-na = xr.open_dataset('./namerica_params.nc')
+na = xr.open_dataset('/Volumes/data/tgw-hydro/params/namerica_params.nc')
 huc8_shp = read_dataframe("../data/HUC8_CONUS/HUC8_US.shp")
 
 for i, huc8 in tqdm(huc8_shp.iterrows(), total=len(huc8_shp.geometry)):

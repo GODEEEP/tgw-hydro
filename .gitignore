@@ -1,3 +1,11 @@
 .DS_Store
 .Rhistory
 .Rproj.user/
+data/*
+params/**/
+vic/
+sample_data/
+plots/
+references/
+ostrich/
+dPLHBVrelease/

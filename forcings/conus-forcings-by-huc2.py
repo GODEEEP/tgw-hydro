@@ -18,8 +18,10 @@ def process_year(y, output_dir):
 
   input_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Year_Files/'
 
+  print(f'Processing year {y}')
+
   start_time = time.time()
-  forcing = xr.load_dataset(f'{input_dir}/tgw_forcing_d01_00625vic_{y}.nc')
+  forcing = xr.open_dataset(f'{input_dir}/tgw_forcing_d01_00625vic_{y}.nc')
   runtime = round((time.time() - start_time)/60, 2)
   print(f"Loading the dataset took {runtime} minutes")
 
@@ -29,6 +31,7 @@ def process_year(y, output_dir):
   for huc2_code in range(1, 18+1):
     os.makedirs(f'{output_dir}/{huc2_code:02}', exist_ok=True)
 
+  # for h, huc2 in tqdm(huc2_shp.iterrows(), total=len(huc2_shp.geometry), desc=" huc2", position=0):
   for h, huc2 in huc2_shp.iterrows():
 
     huc2_code = huc2.huc2
@@ -42,6 +45,8 @@ def process_year(y, output_dir):
 
     for lon in subdomain.lon:
       for lat in subdomain.lat:
+        # for lon in tqdm(subdomain.lon, desc=" lon", position=1, leave=False):
+        # for lat in tqdm(subdomain.lat, desc=" lat", position=2, leave=False):
 
         if not geometry.contains(Point(lon, lat)):
           continue

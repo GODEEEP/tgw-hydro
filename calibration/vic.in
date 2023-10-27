@@ -1,0 +1,7 @@
+0.1 # Variable infitration parameter
+5.0  # Max velocity of base flow
+0.5    # Fraction of where nonlinear base flow occurs
+0.7     # Fraction of maximum soil moisture where non-linear baseflow occurs
+0.5 # Thickness of soil moisture layer 1
+0.5 # Thickness of soil moisture layer 2
+0.5 # Thickness of soil moisture layer 3

@@ -1,30 +1,55 @@
-import xesmf as xe
+from shapely.geometry import shape, Point
 import xarray as xr
+import pandas as pd
+import numpy as np
+from pyogrio import read_dataframe
+from tqdm import tqdm
+import sys
 import os
-# loading the xesmf package will throw an error if this path is not set
-# os.environ['ESMFMKFILE'] = '/Users/brac840/miniforge3/envs/vic/lib/esmf.mk'
+import time
 
-runoff_data_dir = '/Volumes/data/GRFR_runoff/global'
-subset_output_dir = '/Volumes/data/GRFR_runoff/conus'
-years = list(range(1979, 2019+1))
+'''
+Author: Cameron Bracken 10-19-2023
 
-# domain including conus and most of canada
-lon_slice = slice(-140, -55)
-lat_slice = slice(20, 70)
+Create runoff files specific for one grid point, and organize the files by HUC2
+'''
 
-na = xr.open_dataset('/Volumes/data/tgw-hydro/params/namerica_params.nc')
-na_subset = na.sel(lon=lon_slice, lat=lat_slice)
 
-for year in years:
-  print(year)
+def process_year(y, output_dir):
 
-  ro = xr.open_dataset(f'{runoff_data_dir}/RUNOFF_{year}.nc')
+  print(f'Processing year {y}')
+  start_time = time.time()
 
-  # domain includes conus and canada
-  ro_subset = ro.sel(lon=lon_slice, lat=lat_slice)
+  input_dir = '/rcfs/projects/godeeep/VIC/runoff/conus/'
+  runoff = xr.load_dataset(f'{input_dir}/runoff_conus_16th_deg_{y}.nc')
+  grid_ids = pd.read_csv('../data/grid_ids_conus.csv')
 
-  # regrid to 1/16th degree from 0.05 degree (1/20th)
-  regridder = xe.Regridder(ro_subset, na_subset, 'conservative')
-  ro_regrid = regridder(ro_subset, keep_attrs=True)
+  # for i, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
+  for i, cell in grid_ids.iterrows():
 
-  ro_regrid.to_netcdf(f'{subset_output_dir}/runoff_conus_16th_deg_{year}.nc')
+    huc2_code = int(cell.huc2)
+    lat = cell.lat
+    lon = cell.lon
+
+    # sys.exit("Error message")
+    point_forcing = runoff.sel(lat=slice(lat, lat), lon=slice(lon, lon))
+
+    # make a subdirectory for each grid point
+    point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
+    os.makedirs(point_dir, exist_ok=True)
+    runoff_fn = f'{point_dir}/runoff_16thdeg_{i+1:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
+
+    # skip over existing files
+    if not os.path.exists(runoff_fn):
+      point_forcing.to_netcdf(runoff_fn)
+
+  runtime = round((time.time() - start_time)/60, 2)
+  print(f"Processing completed in {runtime} minutes for file {os.path.basename(runoff_fn)}")
+
+
+if __name__ == "__main__":
+  output_dir = '/rcfs/projects/godeeep/VIC/runoff/conus_grid'
+  process_year(sys.argv[1], output_dir)
+  # years = range(1979, 2019+1)
+  # for year in years:
+  # process_year(year, output_dir)

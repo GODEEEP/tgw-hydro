@@ -30,8 +30,23 @@ def process(output_dir):
     lat = cell.lat
     lon = cell.lon
 
-    subdomain = domain.sel(lat=slice(lat, lat), lon=slice(lon, lon))
-    subdomain_params = params.sel(lat=slice(lat, lat), lon=slice(lon, lon))
+    point_domain = domain.sel(lat=slice(lat, lat), lon=slice(lon, lon))
+    point_params = params.sel(lat=slice(lat, lat), lon=slice(lon, lon))
+
+    mask = point_domain.mask
+    # make sure the mask is set properly
+    mask[0] = 1
+
+    root_fract = point_params.root_fract
+
+    for k in range(len(root_fract.veg_class)):
+      # root fraction was throwing errors so renormalize
+      root_fract[k, :] = root_fract[k, :]/sum(root_fract[k, :])
+
+    point_domain['mask'] = mask
+    point_params['mask'] = mask
+    point_params['run_cell'] = mask
+    point_params['root_fract'] = root_fract
 
     # make a subdirectory for each grid point
     point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
@@ -41,10 +56,10 @@ def process(output_dir):
 
     # skip over existing files
     # if not os.path.exists(domain_fn):
-    subdomain.to_netcdf(domain_fn)
+    point_domain.to_netcdf(domain_fn)
 
     # if not os.path.exists(params_fn):
-    subdomain_params.to_netcdf(params_fn)
+    point_params.to_netcdf(params_fn)
 
   runtime = round((time.time() - start_time)/60, 2)
   print(f"Processing completed in {runtime}")

@@ -9,3 +9,5 @@ plots/
 references/
 ostrich/
 dPLHBVrelease/
+calibration/*
+params/*.nc

@@ -1,5 +1,6 @@
 from shapely.geometry import shape, Point
 import xarray as xr
+import pandas as pd
 import numpy as np
 from pyogrio import read_dataframe
 from tqdm import tqdm
@@ -21,50 +22,42 @@ def process_year(y, output_dir):
   print(f'Processing year {y}')
 
   start_time = time.time()
-  forcing = xr.open_dataset(f'{input_dir}/tgw_forcing_d01_00625vic_{y}.nc')
+  forcing = xr.load_dataset(f'{input_dir}/tgw_forcing_d01_00625vic_{y}.nc')
   runtime = round((time.time() - start_time)/60, 2)
   print(f"Loading the dataset took {runtime} minutes")
 
-  huc2_shp = read_dataframe("../data/HUC2/HUC2.shp")
-
-  os.makedirs(output_dir, exist_ok=True)
-  for huc2_code in range(1, 18+1):
-    os.makedirs(f'{output_dir}/{huc2_code:02}', exist_ok=True)
+  grid_ids = pd.read_csv('../data/grid_ids_conus.csv')
 
   # for h, huc2 in tqdm(huc2_shp.iterrows(), total=len(huc2_shp.geometry), desc=" huc2", position=0):
-  for h, huc2 in huc2_shp.iterrows():
+  for i, cell in grid_ids.iterrows():
 
-    huc2_code = huc2.huc2
+    huc2_code = int(cell.huc2)
+    lat = cell.lat
+    lon = cell.lon
 
-    print('Working on HUC', huc2_code, h, y)
+    point_forcing = forcing.sel(lat=slice(lat, lat), lon=slice(lon, lon))
 
-    geometry = huc2.geometry
-    bounds = geometry.bounds
+    # make a subdirectory for each grid point
+    point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
+    os.makedirs(point_dir, exist_ok=True)
+    forcing_fn = f'{point_dir}/forcings_16thdeg_{i+1:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
 
-    subdomain = forcing.sel(lat=slice(bounds[1], bounds[3]), lon=slice(bounds[0], bounds[2]))
-
-    for lon in subdomain.lon:
-      for lat in subdomain.lat:
-        # for lon in tqdm(subdomain.lon, desc=" lon", position=1, leave=False):
-        # for lat in tqdm(subdomain.lat, desc=" lat", position=2, leave=False):
-
-        if not geometry.contains(Point(lon, lat)):
+    # skip over existing files
+    if not os.path.exists(forcing_fn):
+      # the tgw grid doesn't match the full extent, some points are missing
+      if point_forcing.lon.shape[0] == 0 or point_forcing.lat.shape[0] == 0:
+        continue
+        # print(f'Grid cell')
+      else:
+        try:
+          point_forcing.to_netcdf(forcing_fn)
+        except KeyboardInterrupt:
+          sys.exit()
+        except:
           continue
-        else:
-          # sys.exit("Error message")
-          point_forcing = subdomain.sel(lat=slice(lat, lat), lon=slice(lon, lon))
-
-          # make a subdirectory for each grid point
-          ll = f'{lon:0.5f}_{lat:0.5f}'
-          point_subdir = f'{output_dir}/{huc2_code:02}/{ll}'
-          os.makedirs(point_subdir, exist_ok=True)
-          forcing_fn = f'{point_subdir}/forcing_{ll}_{y}.nc'
-
-          # skip over existing files
-          if not os.path.exists(forcing_fn):
-            point_forcing.to_netcdf(forcing_fn)
 
 
 if __name__ == "__main__":
-  output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
+  # output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
+  output_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
   process_year(sys.argv[1], output_dir)

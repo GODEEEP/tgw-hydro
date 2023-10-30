@@ -20,21 +20,22 @@ import glob
 import os
 import sys
 
-yearstart=1979
-yearend=2022
-filesubinit='1979-01-01'
+yearstart = 1979
+yearend = 2022
+filesubinit = '1979-01-01'
+
 
 def method(i: int = 1):
-  
+
   # set dir for source wrf data
   wrf_dir = '/rcfs/projects/godeeep/shared_data/tgw_wrf/tgw_wrf_historic/hourly/'
-  
+
   # set dir for processed data
   out_dir = '/qfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/'
 
   # set label to append to output files
   file_label = '00625vic'
-  
+
   """
   wrf data dir must have either data from the start of the WRF simulation period or
   an 'init' file prior to the desired time window to back out incremental
@@ -42,33 +43,33 @@ def method(i: int = 1):
   """
   # set init file flag [0: false, 1: true]
   init_file_flag = 1 if i == 0 else 0
-  
+
   """
   flag indicates whether first netCDF file in dir is from the start of the WRF
   simulation period [0: false] or an 'init' file [1: true] to back out
   incremental precipitation. If false, data are written out for first file
   """
-  
+
   # build file list
-  #file_list = glob.glob("{0}/*{1}*.nc".format(wrf_dir, year_sel))
-  #file_list.sort()
-  #nfile = len(file_list)
-  
+  # file_list = glob.glob("{0}/*{1}*.nc".format(wrf_dir, year_sel))
+  # file_list.sort()
+  # nfile = len(file_list)
+
   # build file list (subset of files)
   file_list = glob.glob("{0}/*{1}*.nc".format(wrf_dir, filesubinit))
   # print('file list: ', file_list)
   for yr in range(yearstart, yearend+1):
     file_list_tmp = glob.glob("{0}/*{1}*.nc".format(wrf_dir, yr))
     file_list = file_list + file_list_tmp
-	
+
   file_list.sort()
   # print('file list: ', file_list)
   nfile = len(file_list)
 
   # construct the 1/16 degree grid
-  lat = np.arange(25.03125, 53.03125, 0.0625)
-  lon = np.arange(-124.96875, -66.96875, 0.0625)
-  
+  lat = np.arange(24.03125, 56.03125, 0.0625)
+  lon = np.arange(-129.96875, -65.09375, 0.0625)
+
   # subset forcings
   subset_flag = False
   subset_dir = 'pnw/'
@@ -77,7 +78,7 @@ def method(i: int = 1):
   max_lat = 52.84375
   min_lon = -124.90625
   max_lon = -109.84375
-  
+
   wrf_file = file_list[i]
 
   # read in 'init' file
@@ -93,12 +94,12 @@ def method(i: int = 1):
 
     # set coordinate system
     wrf_data_initprecip.rio.write_crs(
-      '+proj=lcc +lat_0=40.0000076293945 +lon_0=-97 +lat_1=30 +lat_2=45 +x_0=0 +y_0=0 +R=6370000 +units=m +no_defs', inplace=True
-      ).rio.set_spatial_dims(
-      x_dim='west_east',
-      y_dim='south_north',
-      inplace=True,
-      ).rio.write_coordinate_system(inplace=True)
+        '+proj=lcc +lat_0=40.0000076293945 +lon_0=-97 +lat_1=30 +lat_2=45 +x_0=0 +y_0=0 +R=6370000 +units=m +no_defs', inplace=True
+    ).rio.set_spatial_dims(
+        x_dim='west_east',
+        y_dim='south_north',
+        inplace=True,
+    ).rio.write_coordinate_system(inplace=True)
 
   # read in file to process
   if (init_file_flag == 0 and i == 0) or (i > 0):
@@ -106,25 +107,26 @@ def method(i: int = 1):
     start_time = time.time()
 
     # open dataset
-    wrf_data = salem.open_wrf_dataset(wrf_file)[['Q2', 'T2', 'PSFC', 'U10', 'V10', 'RAINC', 'RAINSH', 'RAINNC', 'SWDOWN', 'GLW']].drop(['lat', 'lon'])
+    wrf_data = salem.open_wrf_dataset(
+        wrf_file)[['Q2', 'T2', 'PSFC', 'U10', 'V10', 'RAINC', 'RAINSH', 'RAINNC', 'SWDOWN', 'GLW']].drop(['lat', 'lon'])
 
     # set coordinate system
     wrf_data.rio.write_crs(
-      '+proj=lcc +lat_0=40.0000076293945 +lon_0=-97 +lat_1=30 +lat_2=45 +x_0=0 +y_0=0 +R=6370000 +units=m +no_defs', inplace=True
-      ).rio.set_spatial_dims(
-      x_dim='west_east',
-      y_dim='south_north',
-      inplace=True,
-      ).rio.write_coordinate_system(inplace=True)
+        '+proj=lcc +lat_0=40.0000076293945 +lon_0=-97 +lat_1=30 +lat_2=45 +x_0=0 +y_0=0 +R=6370000 +units=m +no_defs', inplace=True
+    ).rio.set_spatial_dims(
+        x_dim='west_east',
+        y_dim='south_north',
+        inplace=True,
+    ).rio.write_coordinate_system(inplace=True)
 
     # create placeholder vars to hold computed incremental precipitation
-    wrf_data = wrf_data.assign(RAINC_INC = wrf_data['RAINC'] * 0)
+    wrf_data = wrf_data.assign(RAINC_INC=wrf_data['RAINC'] * 0)
     wrf_data.RAINC_INC.attrs['units'] = 'mm'
     wrf_data.RAINC_INC.attrs['description'] = 'INCREMENTAL TOTAL CUMULUS PRECIPITATION'
-    wrf_data = wrf_data.assign(RAINSH_INC = wrf_data['RAINSH'] * 0)
+    wrf_data = wrf_data.assign(RAINSH_INC=wrf_data['RAINSH'] * 0)
     wrf_data.RAINSH_INC.attrs['units'] = 'mm'
     wrf_data.RAINSH_INC.attrs['description'] = 'INCREMENTAL SHALLOW CUMULUS PRECIPITATION'
-    wrf_data = wrf_data.assign(RAINNC_INC = wrf_data['RAINNC'] * 0)
+    wrf_data = wrf_data.assign(RAINNC_INC=wrf_data['RAINNC'] * 0)
     wrf_data.RAINNC_INC.attrs['units'] = 'mm'
     wrf_data.RAINNC_INC.attrs['description'] = 'INCREMENTAL TOTAL GRID SCALE PRECIPITATION'
 
@@ -150,12 +152,12 @@ def method(i: int = 1):
     # create a template dataset with 1/8 degree grid
     wrf_data_wgs84 = xr.Dataset(coords={'time': wrf_data.time.values, 'y': lat, 'x': lon, })
     wrf_data_wgs84.rio.write_crs(
-      'EPSG:4326', inplace=True
-      ).rio.set_spatial_dims(
-      x_dim='x',
-      y_dim='y',
-      inplace=True,
-      ).rio.write_coordinate_system(inplace=True)
+        'EPSG:4326', inplace=True
+    ).rio.set_spatial_dims(
+        x_dim='x',
+        y_dim='y',
+        inplace=True,
+    ).rio.write_coordinate_system(inplace=True)
 
     # reproject each var
     for var in list(wrf_data.data_vars):
@@ -168,17 +170,19 @@ def method(i: int = 1):
     # compute vars
 
     # compute total precipitation
-    wrf_data_wgs84 = wrf_data_wgs84.assign(PRECIP = wrf_data_wgs84['RAINC_INC'] + wrf_data_wgs84['RAINSH_INC'] + wrf_data_wgs84['RAINNC_INC'])
+    wrf_data_wgs84 = wrf_data_wgs84.assign(
+        PRECIP=wrf_data_wgs84['RAINC_INC'] + wrf_data_wgs84['RAINSH_INC'] + wrf_data_wgs84['RAINNC_INC'])
     wrf_data_wgs84.PRECIP.attrs['units'] = 'mm/step'
     wrf_data_wgs84.PRECIP.attrs['description'] = 'TOTAL PRECIPITATION'
 
     # compute wind speed from component winds
-    wrf_data_wgs84 = wrf_data_wgs84.assign(WSPEED = np.sqrt(wrf_data_wgs84['U10']**2 + wrf_data_wgs84['V10']**2))
+    wrf_data_wgs84 = wrf_data_wgs84.assign(WSPEED=np.sqrt(wrf_data_wgs84['U10']**2 + wrf_data_wgs84['V10']**2))
     wrf_data_wgs84.WSPEED.attrs['units'] = 'm s-1'
     wrf_data_wgs84.WSPEED.attrs['description'] = 'WIND SPEED at 10 M'
 
     # compute vapor pressure
-    wrf_data_wgs84 = wrf_data_wgs84.assign(VP = (wrf_data_wgs84['Q2'] * wrf_data_wgs84['PSFC']) / (0.622 + wrf_data_wgs84['Q2']))
+    wrf_data_wgs84 = wrf_data_wgs84.assign(
+        VP=(wrf_data_wgs84['Q2'] * wrf_data_wgs84['PSFC']) / (0.622 + wrf_data_wgs84['Q2']))
     wrf_data_wgs84.VP.attrs['units'] = 'Pa'
     wrf_data_wgs84.VP.attrs['description'] = 'VAPOR PRESSURE'
 
@@ -198,17 +202,17 @@ def method(i: int = 1):
     wrf_data_wgs84_subset = wrf_data_wgs84.get(['PRECIP', 'T2', 'PSFC', 'SWDOWN', 'GLW', 'VP', 'WSPEED'])
 
     # rename dimensions
-    wrf_data_out = wrf_data_wgs84_subset.rename({'x': 'lon','y': 'lat'})
+    wrf_data_out = wrf_data_wgs84_subset.rename({'x': 'lon', 'y': 'lat'})
 
     # write out data
     file_out = out_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
-    wrf_data_out.to_netcdf(path = file_out)
+    wrf_data_out.to_netcdf(path=file_out)
 
     # subset
     if subset_flag:
       wrf_data_dom = wrf_data_out.sel(lon=slice(min_lon, max_lon), lat=slice(min_lat, max_lat))
       file_out = out_dir + subset_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
-      wrf_data_dom.to_netcdf(path = file_out)
+      wrf_data_dom.to_netcdf(path=file_out)
       wrf_data_dom.close()
 
     # close datasets

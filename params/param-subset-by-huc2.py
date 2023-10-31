@@ -24,8 +24,9 @@ def process(output_dir):
   print(f"Loading the datasets took {runtime} minutes")
 
   # for i, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
-  for i, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
+  for n, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
 
+    i = int(cell.id)
     huc2_code = int(cell.huc2)
     lat = cell.lat
     lon = cell.lon

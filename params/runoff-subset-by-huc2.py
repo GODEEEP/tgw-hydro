@@ -25,8 +25,9 @@ def process_year(y, output_dir):
   grid_ids = pd.read_csv('../data/grid_ids_conus.csv')
 
   # for i, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
-  for i, cell in grid_ids.iterrows():
+  for n, cell in grid_ids.iterrows():
 
+    i = int(cell.id)
     huc2_code = int(cell.huc2)
     lat = cell.lat
     lon = cell.lon

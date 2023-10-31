@@ -61,8 +61,8 @@ def process(output_dir):
     # if not os.path.exists(params_fn):
     point_params.to_netcdf(params_fn)
 
-  runtime = round((time.time() - start_time)/60, 2)
-  print(f"Processing completed in {runtime}")
+  runtime = round((time.time() - start_time)/60/60, 2)
+  print(f"Processing completed in {runtime} hours")
 
 
 if __name__ == "__main__":

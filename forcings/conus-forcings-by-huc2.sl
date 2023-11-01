@@ -2,7 +2,7 @@
 
 #SBATCH --partition=shared
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=36
 #SBATCH --account=GODEEEP
 #SBATCH --time=48:00:00
 #SBATCH --array=0-43

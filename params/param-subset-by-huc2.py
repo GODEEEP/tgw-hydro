@@ -50,10 +50,10 @@ def process(output_dir):
     point_params['root_fract'] = root_fract
 
     # make a subdirectory for each grid point
-    point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
+    point_dir = f'{output_dir}/{huc2_code:02}/{i:07}_{lon:0.5f}_{lat:0.5f}'
     os.makedirs(point_dir, exist_ok=True)
-    domain_fn = f'{point_dir}/domain_{i+1:07}_{lon:0.5f}_{lat:0.5f}.nc'
-    params_fn = f'{point_dir}/params_{i+1:07}_{lon:0.5f}_{lat:0.5f}.nc'
+    domain_fn = f'{point_dir}/domain_{i:07}_{lon:0.5f}_{lat:0.5f}.nc'
+    params_fn = f'{point_dir}/params_{i:07}_{lon:0.5f}_{lat:0.5f}.nc'
 
     # skip over existing files
     # if not os.path.exists(domain_fn):

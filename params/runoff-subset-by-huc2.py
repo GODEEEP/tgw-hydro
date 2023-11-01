@@ -36,9 +36,9 @@ def process_year(y, output_dir):
     point_forcing = runoff.sel(lat=slice(lat, lat), lon=slice(lon, lon))
 
     # make a subdirectory for each grid point
-    point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
+    point_dir = f'{output_dir}/{huc2_code:02}/{i:07}_{lon:0.5f}_{lat:0.5f}'
     os.makedirs(point_dir, exist_ok=True)
-    runoff_fn = f'{point_dir}/runoff_16thdeg_{i+1:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
+    runoff_fn = f'{point_dir}/runoff_16thdeg_{i:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
 
     # skip over existing files
     if not os.path.exists(runoff_fn):

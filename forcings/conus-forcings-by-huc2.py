@@ -15,9 +15,7 @@ Create VIC forcing files specific for one grid point, and organize the files by 
 '''
 
 
-def process_year(y, output_dir):
-
-  input_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Year_Files/'
+def process_year(y, input_dir, output_dir):
 
   print(f'Processing year {y}')
 
@@ -39,9 +37,9 @@ def process_year(y, output_dir):
     point_forcing = forcing.sel(lat=slice(lat, lat), lon=slice(lon, lon))
 
     # make a subdirectory for each grid point
-    point_dir = f'{output_dir}/{huc2_code:02}/{i+1:07}_{lon:0.5f}_{lat:0.5f}'
+    point_dir = f'{output_dir}/{huc2_code:02}/{i:07}_{lon:0.5f}_{lat:0.5f}'
     os.makedirs(point_dir, exist_ok=True)
-    forcing_fn = f'{point_dir}/forcings_16thdeg_{i+1:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
+    forcing_fn = f'{point_dir}/forcings_16thdeg_{i:07}_{lon:0.5f}_{lat:0.5f}_{y}.nc'
 
     # skip over existing files
     if not os.path.exists(forcing_fn):
@@ -60,6 +58,7 @@ def process_year(y, output_dir):
 
 if __name__ == "__main__":
   # output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
-  # output_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
-  output_dir = '/vast/projects/godeeep/inputs_1_16_deg_by_huc2/'
-  process_year(sys.argv[1], output_dir)
+  output_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
+  # output_dir = '/vast/projects/godeeep/inputs_1_16_deg_by_huc2/'
+  input_dir = '/vast/projects/godeeep/conus_tgw_1_16_deg_historical_year_files/'
+  process_year(sys.argv[1], input_dir, output_dir)

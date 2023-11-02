@@ -26,8 +26,7 @@ def process_year(y, input_dir, output_dir):
 
   grid_ids = pd.read_csv('../data/grid_ids_conus.csv')
 
-  # for h, huc2 in tqdm(huc2_shp.iterrows(), total=len(huc2_shp.geometry), desc=" huc2", position=0):
-  for n, cell in grid_ids.iterrows():
+  for n, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
 
     i = int(cell.id)
     huc2_code = int(cell.huc2)

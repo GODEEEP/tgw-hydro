@@ -36,7 +36,7 @@ def process(output_dir):
 
     mask = point_domain.mask
     # make sure the mask is set properly
-    mask[0] = 1
+    # mask[0] = 1
 
     root_fract = point_params.root_fract
 
@@ -44,7 +44,7 @@ def process(output_dir):
       # root fraction was throwing errors so renormalize
       root_fract[k, :] = root_fract[k, :]/sum(root_fract[k, :])
 
-    point_domain['mask'] = mask
+    # point_domain['mask'] = mask
     point_params['mask'] = mask
     point_params['run_cell'] = mask
     point_params['root_fract'] = root_fract

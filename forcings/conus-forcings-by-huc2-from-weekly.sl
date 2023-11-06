@@ -1,9 +1,9 @@
 #!/usr/bin/env /bin/bash
 
-#SBATCH --partition=slurm
+#SBATCH --partition=smp7 ### a partition on constance
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=48
+#SBATCH --cpus-per-task=40
 #SBATCH --account=GODEEEP
 #SBATCH --time=48:00:00
 
@@ -15,7 +15,7 @@ conda activate vic
 
 echo 'Done loading modules'
 
-nworker=2 # the dask threads will be split into the dask workers to share memory
+nworker=1 # the dask threads will be split into the dask workers to share memory
 
 start_year=1979
 end_year=2022

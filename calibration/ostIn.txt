@@ -11,10 +11,9 @@ EndFilePairs
 
 BeginExtraFiles
 params.nc
-domain.nc
 config.txt
 vic_image
-fluxes.1980-01-01.nc
+input_dir.txt
 EndExtraFiles
 
 BeginParams
@@ -23,10 +22,8 @@ BeginParams
 <Dsmax>        5.00     1.000     30.0  none   none   none
 <D_s>          0.50     0.000      1.0  none   none   none
 <Ws>           0.90     0.500      1.0  none   none   none
-<depth1>       0.05     0.001      0.1  none   none   none
 <depth2>       0.50     0.100      1.0  none   none   none
 <depth3>       1.00     0.100      2.0  none   none   none
-<expt1>        10.00    8.000     30.0  none   none   none
 <expt2>        10.00    8.000     30.0  none   none   none
 <expt3>        10.00    8.000     30.0  none   none   none
 EndParams
@@ -45,7 +42,7 @@ PenaltyFunction APM
 EndGCOP
 
 BeginInitParams  
-0.2 5.0 0.5 0.9 0.05 0.5 1.0 10.0 10.0 10.0
+0.2 5.0 0.5 0.9 0.5 1.0 10.0 10.0
 EndInitParams
 
 BeginParticleSwarm

@@ -2,9 +2,7 @@
 5.0  # Max velocity of base flow
 0.5    # Fraction of where nonlinear base flow occurs
 0.9     # Fraction of maximum soil moisture where non-linear baseflow occurs
-0.5 # Thickness of soil moisture layer 1
 0.5 # Thickness of soil moisture layer 2
 1.0 # Thickness of soil moisture layer 3
-10.0  # Brooks-Corey baseflow parameter
-10.0  # Brooks-Corey baseflow parameter
-10.0  # Brooks-Corey baseflow parameter
+10.0  # Brooks-Corey baseflow parameter layer 2
+10.0  # Brooks-Corey baseflow parameter layer 3

@@ -3,10 +3,11 @@
 #module purge
 module load jq
 
-key=08MA002
+basin="00"
+key=08LD000
 json_in=grid_ids_ca_group.json
 csv_in=grid_ids_ca_check.csv
-path_ctr=/people/sony061/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/00
+path_ctr=/people/sony061/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/$basin
 
 pts=$(jq .\"$key\" $json_in)
 pts=${pts// /}  # remove space

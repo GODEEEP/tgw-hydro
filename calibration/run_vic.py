@@ -2,16 +2,17 @@
 
 import os
 from xarray import open_dataset, open_mfdataset
-from pandas import read_csv
-from numpy import mean, sum
+import pandas as pd
+from numpy import mean, sum, corrcoef, std, sqrt, log1p
 import sys
 from glob import glob
 # from hydroeval import evaluator, nse
+import subprocess
 
 
 def run_vic():
-  os.system('OMP_NUM_THREADS=1 ./vic_image -g config.txt')
-
+  #os.system('OMP_NUM_THREADS=1 ./vic_image -g config.txt')
+  subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env = {'OMP_NUM_THREADS': '1', **os.environ}) # vic_image
 
 def modify_params(params):
   """
@@ -66,10 +67,10 @@ def read_params():
   params['Dsmax'] = p[1]
   params['D_s'] = p[2]
   params['Ws'] = p[3]
-  params['depth2'] = p[5]
-  params['depth3'] = p[6]
-  params['expt2'] = p[8]
-  params['expt3'] = p[9]
+  params['depth2'] = p[4]
+  params['depth3'] = p[5]
+  params['expt2'] = p[6]
+  params['expt3'] = p[7]
 
   return params
 
@@ -84,29 +85,51 @@ def nse(obs, pred):
   #   val = 999
   return val
 
+def kge(obs, pred):
+  r = corrcoef(pred, obs)[0, 1]
+  alpha = std(pred) / std(obs)
+  beta = mean(pred) / mean(obs)
+  gramma = alpha / beta
+  return 1 - sqrt((r - 1) ** 2 + (beta - 1) ** 2 + (gramma - 1) ** 2)
 
-def compute_obj(input_dir):
+
+def compute_obj(input_dir, begin_date, end_date):
 
   # read VIC output data
-  output = open_dataset('vic_runoff.1980-01-01.nc')
-  runoff_vic = output['OUT_RUNOFF']  # .resample(time='D').sum(['time', 'lat', 'lon'])
+  output = open_dataset('vic_runoff.1979-01-01.nc')
+  runoff_vic = output['OUT_RUNOFF'].isel(lon = 0, lat = 0) + output['OUT_BASEFLOW'].isel(lon = 0, lat = 0) # .resample(time='D').sum(['time', 'lat', 'lon'])
 
-  runoff_files = glob(f'{input_dir}/runoff*')
-  runoff_files.sort()
+  # read the concatenated runoff file at once (potentially to increase efficiency)
+  runoff_files = glob(f'{input_dir}/runoff_concat_16thdeg_*.nc')
+  runoff_obs = open_dataset(runoff_files[0]).isel(lon = 0, lat = 0)['ro']
+
+  # only compare for the date range of interest
+  runoff_vic = runoff_vic.where(runoff_vic['time'] >= begin_date, drop = True).where(runoff_vic['time'] < end_date, drop = True)
+  runoff_obs = runoff_obs.where(runoff_obs['time'] >= begin_date, drop = True).where(runoff_obs['time'] < end_date, drop = True)
+
+  # compare the monthly mean statistics
+  runoff_vic = runoff_vic.resample(time = 'M').mean()
+  runoff_obs = runoff_obs.resample(time = 'M').mean()
+  
+  #runoff_files = glob(f'{input_dir}/runoff*')
+  #runoff_files.sort()
   # ro_path = '/Users/brac840/projects/godeeep/tgw-hydro/calibration/input_files/'
   # ro_fn = [f'runoff_16thdeg_0090815_-114.53125_49.65625_{y}.nc' for y in range(1980, 2009+1)]
   # runoff data is 1979:2019
-  runoff_obs = open_mfdataset(runoff_files[1:31])
+  #runoff_obs = open_mfdataset(runoff_files[1:31])
 
-  obs = runoff_obs.ro[:, 0, 0].to_numpy()
-  pred = output['OUT_RUNOFF'].to_numpy().flatten()
+  #obs = runoff_obs.ro[:, 0, 0].to_numpy()
+  #pred = output['OUT_RUNOFF'].to_numpy().flatten()
 
-  output.close()
-  runoff_obs.close()
+  #output.close()
+  #runoff_obs.close()
 
   # negative because we are minimizing
   # skip the first 2 years for spinup
-  return -nse(obs[730:], pred[730:])
+  return -nse(runoff_obs.to_numpy(), runoff_vic.to_numpy())
+  #return -kge(runoff_obs.to_numpy(), runoff_vic.to_numpy())
+  #return 1-1/(2-nse(runoff_obs.to_numpy(), runoff_vic.to_numpy())) # normalization
+  #return -nse(runoff_obs.to_numpy(), runoff_vic.to_numpy()) -nse(log1p(runoff_obs.to_numpy()), log1p(runoff_vic.to_numpy()))
 
 
 def write_output(obj):
@@ -118,12 +141,13 @@ def write_output(obj):
 
 if __name__ == '__main__':
 
-  f = open(f'input_dir.txt', 'r')
-  input_dir = f.read()
-  f.close()
+  #f = open(f'input_dir.txt', 'r')
+  #input_dir = f.read()
+  #f.close()
+  #os.chdir('outputs/05DC000/0245388_-116.65625_52.34375/mod0')
 
   updated_params = read_params()
   modify_params(updated_params)
   run_vic()
-  obj = compute_obj(input_dir)
+  obj = compute_obj('../input_symln', pd.Timestamp('1981-01-01'), pd.Timestamp('1988-01-01'))
   write_output(obj)

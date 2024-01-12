@@ -2,19 +2,20 @@
 ProgramType DDS
 # ProgramType  ParticleSwarm
 ObjectiveFunction  GCOP
-ModelSubdir mod
+ModelSubdir .
 ModelExecutable  ./run_vic.py
+TelescopingStrategy none
 
 BeginFilePairs
 vic.in.tpl ; vic.in
 EndFilePairs
 
-BeginExtraFiles
-params.nc
-config.txt
-vic_image
-input_dir.txt
-EndExtraFiles
+# BeginExtraFiles
+# params.nc
+# config.txt
+# vic_image
+# input_dir.txt
+# EndExtraFiles
 
 BeginParams
 # name       init.      lower    upper     transformations
@@ -66,6 +67,6 @@ EndParallelDDS
 
 BeginDDS
 PerturbationValue      0.2
-MaxIterations          250
+MaxIterations          50
 UseInitialParamValues
 EndDDS

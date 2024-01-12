@@ -3,10 +3,11 @@
 import os
 from xarray import open_dataset, open_mfdataset
 from pandas import read_csv
-from numpy import mean, sum
+from numpy import mean, sum, log1p
 import sys
 from glob import glob
-# from hydroeval import evaluator, nse
+# from hydroeval import evaluator, nse, kge
+import hydroeval as he
 
 
 def run_vic():
@@ -66,15 +67,15 @@ def read_params():
   params['Dsmax'] = p[1]
   params['D_s'] = p[2]
   params['Ws'] = p[3]
-  params['depth2'] = p[5]
-  params['depth3'] = p[6]
-  params['expt2'] = p[8]
-  params['expt3'] = p[9]
+  params['depth2'] = p[4]
+  params['depth3'] = p[5]
+  params['expt2'] = p[6]
+  params['expt3'] = p[7]
 
   return params
 
 
-def nse(obs, pred):
+def nse_obj(obs, pred):
   val = (1-(sum((obs-pred)**2)/sum((obs-mean(obs))**2)))
   # try:
   #   val = (1-(sum((obs-pred)**2)/sum((obs-mean(obs))**2)))
@@ -82,14 +83,20 @@ def nse(obs, pred):
   #   sys.exit()
   # except:
   #   val = 999
-  return val
+  return -val
+
+
+def kge_obj(obs, pred):
+  kge, r, alpha, beta = he.evaluator(he.kge, pred, obs)
+  return -kge[0]
 
 
 def compute_obj(input_dir):
 
   # read VIC output data
   output = open_dataset('vic_runoff.1980-01-01.nc')
-  runoff_vic = output['OUT_RUNOFF']  # .resample(time='D').sum(['time', 'lat', 'lon'])
+  runoff_vic = output['OUT_RUNOFF'].resample(time='M').sum(['time', 'lat', 'lon'])
+  baseflow_vic = output['OUT_BASEFLOW'].resample(time='M').sum(['time', 'lat', 'lon'])
 
   runoff_files = glob(f'{input_dir}/runoff*')
   runoff_files.sort()
@@ -98,15 +105,25 @@ def compute_obj(input_dir):
   # runoff data is 1979:2019
   runoff_obs = open_mfdataset(runoff_files[1:31])
 
-  obs = runoff_obs.ro[:, 0, 0].to_numpy()
-  pred = output['OUT_RUNOFF'].to_numpy().flatten()
+  # obs = runoff_obs.ro[:, 0, 0].to_numpy()
+  obs = runoff_obs.ro.resample(time='M').sum(['time', 'lat', 'lon']).to_numpy()
+  pred = baseflow_vic.to_numpy().flatten() + runoff_vic.to_numpy().flatten()
 
   output.close()
   runoff_obs.close()
 
+  # runoff_obs.ro[:, 0, 0].plot()
+  runoff_obs.ro.resample(time='M').sum(['time', 'lat', 'lon']).plot()
+  # baseflow_vic.plot()
+  # runoff_vic.plot()
+  (runoff_vic+baseflow_vic).plot()
+
   # negative because we are minimizing
   # skip the first 2 years for spinup
-  return -nse(obs[730:], pred[730:])
+  # the length is a hack because for some
+  # vic runs one day less on PIC
+  # return -nse(obs[730:10227], pred[730:10227])-nse(log1p(obs[730:10227]), log1p(pred[730:10227]))
+  return kge_obj(obs[24:], pred[24:])
 
 
 def write_output(obj):
@@ -119,7 +136,7 @@ def write_output(obj):
 if __name__ == '__main__':
 
   f = open(f'input_dir.txt', 'r')
-  input_dir = f.read()
+  input_dir = f.read().strip()
   f.close()
 
   updated_params = read_params()

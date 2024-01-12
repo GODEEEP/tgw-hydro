@@ -29,4 +29,4 @@ for file in forcing_files:
     if 'time' in tomean_daily[v].dims:
       tomean_daily[v].encoding['chunksizes'] = (len(tomean_daily['time']), 1, 1)
 
-  tomean_daily.to_netcdf('input_files/forcing_daily_'+file.split('_')[-1])
+  tomean_daily.to_netcdf('input_files/forcing_6h_'+file.split('_')[-1])

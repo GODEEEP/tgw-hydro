@@ -1,10 +1,8 @@
-# ######################################################################
 # Simulation Parameters
-# ######################################################################
-MODEL_STEPS_PER_DAY   24  # number of model time steps in 24 hour period
-SNOW_STEPS_PER_DAY    24  # number of snow model time steps in 24 hour period
-RUNOFF_STEPS_PER_DAY  24  # number of runoff time steps in 24 hour period
 
+MODEL_STEPS_PER_DAY   4  # number of model time steps in 24 hour period
+SNOW_STEPS_PER_DAY    4  # number of snow model time steps in 24 hour period
+RUNOFF_STEPS_PER_DAY  4  # number of runoff time steps in 24 hour period
 STARTYEAR             1980 # year model simulation starts
 STARTMONTH            1    # month model simulation starts
 STARTDAY              1    # day model simulation starts
@@ -12,13 +10,10 @@ ENDYEAR               2009
 ENDMONTH              12
 ENDDAY                31
 CALENDAR              PROLEPTIC_GREGORIAN
-
 FULL_ENERGY           FALSE # calculate full energy balance
 FROZEN_SOIL           FALSE # calculate frozen soils
 
-# ######################################################################
 # DOMAIN INFO
-# ######################################################################
 DOMAIN domain.nc
 DOMAIN_TYPE    LAT     lat
 DOMAIN_TYPE    LON     lon
@@ -28,13 +23,9 @@ DOMAIN_TYPE    FRAC    frac
 DOMAIN_TYPE    YDIM    lat
 DOMAIN_TYPE    XDIM    lon
 
-# ######################################################################
 # Forcing Files and Parameters
 # netcdf forcing files will be of the form: <FORCING1>YYYY.nc
-# ######################################################################
-# FORCING1      /people/brac840/hydro-tgw/calibration/forcings/tgw_forcing_d01_00625vic_10020001_
-FORCING1      /Users/brac840/projects/godeeep/tgw-hydro/calibration/input_files/forcings_16thdeg_0090815_-114.53125_49.65625_
-# FORCING1      /Users/brac840/projects/godeeep/tgw-hydro/calibration/input_files/forcing_daily_
+FORCING1      /Users/brac840/projects/godeeep/tgw-hydro/calibration/input_files/forcing_6h_
 FORCE_TYPE    AIR_TEMP     T2      # Average air temperature, K
 FORCE_TYPE    PREC         PRECIP  # Total precipitation (rain and snow), kg/m2/s
 FORCE_TYPE    PRESSURE     PSFC    # Atmospheric pressure, Pa
@@ -42,46 +33,25 @@ FORCE_TYPE    SWDOWN       SWDOWN  # Incoming shortwave, W/m2
 FORCE_TYPE    LWDOWN       GLW     # Incoming longwave radiation, W/m2
 FORCE_TYPE    VP           VP      # Vapor pressure, kPa
 FORCE_TYPE    WIND         WSPEED  # Wind speed, m/s
-# WIND_H        10.0                # height of wind speed measurement. NOTE: in image driver, this global parameter is only used for precipitation correction (if enabled); wind measurement height over bare soil is read from the parameter netCDF file.
 
-# ######################################################################
 # Land Surface Files and Parameters
-# ######################################################################
 PARAMETERS          params_updated.nc
 SNOW_BAND           TRUE
 BASEFLOW            ARNO
-JULY_TAVG_SUPPLIED  TRUE
+JULY_TAVG_SUPPLIED  FALSE
+VEGPARAM_LAI        TRUE    # TRUE = veg param file contains LAI information
+VEGPARAM_ALB        TRUE    # TRUE = veg param file contains albedo information
+VEGPARAM_FCAN       TRUE    # TRUE = veg param file contains veg_cover information
+LAI_SRC             FROM_VEGPARAM    # FROM_VEGPARAM = read LAI from veg param file
+ALB_SRC             FROM_VEGPARAM    # FROM_VEGLIB = read albedo from veg library file
+FCAN_SRC            FROM_VEGPARAM    # FROM_VEGPARAM = read fcanopy from veg param file
 ORGANIC_FRACT       FALSE
-LAI_SRC             FROM_VEGPARAM
 NODES               3  # number of soil thermal nodes
 
-# ######################################################################
 # Output Files and Parameters
-# ######################################################################
 RESULT_DIR  .
-
-OUTFILE     fluxes
+OUTFILE     vic_runoff
 AGGFREQ     NDAYS   1  # Write output every 1 day
-# COMPRESS    5  # Use netCDF gzip compression level 5
 OUT_FORMAT  NETCDF4
-# OUTVAR      OUT_PREC
-# OUTVAR      OUT_RAINF
-# OUTVAR      OUT_SNOWF
-# OUTVAR      OUT_AIR_TEMP
-# OUTVAR      OUT_SWDOWN
-# OUTVAR      OUT_LWDOWN
-# OUTVAR      OUT_PRESSURE
-# OUTVAR      OUT_WIND
-# OUTVAR      OUT_DENSITY
-# OUTVAR      OUT_REL_HUMID
-# OUTVAR      OUT_QAIR
-# OUTVAR      OUT_VP
-# OUTVAR      OUT_VPD
 OUTVAR      OUT_RUNOFF
-# OUTVAR      OUT_BASEFLOW
-# OUTVAR      OUT_EVAP
-# OUTVAR      OUT_SWE
-# OUTVAR      OUT_SOIL_MOIST
-# OUTVAR      OUT_ALBEDO
-# OUTVAR      OUT_SOIL_TEMP
-
+OUTVAR      OUT_BASEFLOW

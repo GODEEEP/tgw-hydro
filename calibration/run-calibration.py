@@ -89,7 +89,6 @@ def run_calibration(point_id):
   ALB_SRC             FROM_VEGLIB    # FROM_VEGLIB = read albedo from veg library file
   FCAN_SRC            FROM_VEGLIB    # FROM_VEGPARAM = read fcanopy from veg param file
   ORGANIC_FRACT       FALSE
-  LAI_SRC             FROM_VEGPARAM
   NODES               3  # number of soil thermal nodes
 
   # ######################################################################
@@ -100,7 +99,7 @@ def run_calibration(point_id):
   AGGFREQ     NDAYS   1  # Write output every 1 day
   OUT_FORMAT  NETCDF4
   OUTVAR      OUT_RUNOFF
-  
+  OUTVAR      OUT_BASEFLOW
   '''
 
   # write the vic config file
@@ -117,12 +116,10 @@ def run_calibration(point_id):
   os.chdir(scratch_path)
 
   # run the calibration, takes a few hours
-  os.system('./ostrich')
+  os.system('mpiexec -np 1 ./ostrich')
 
   # copy files for archiving
-  os.system(f'cp Ost* {input_path}/')
-  os.system(f'cp input_dir.txt {input_path}/')
-  os.system(f'cp -r mod0 {input_path}/')
+  os.system(f'cp * {input_path}/')
 
 
 if __name__ == '__main__':

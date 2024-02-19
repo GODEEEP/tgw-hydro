@@ -56,10 +56,11 @@ def read_params():
   <expt3>  # Brooks-Corey baseflow parameter layer 3
   """
 
-  f = open('vic.in', 'r')
-  lines = f.readlines()
-  p = [float(line.split(' ')[0]) for line in lines]
-  f.close()
+  n_params = 8
+
+  with open('vic.in', 'r') as f:
+    lines = f.readlines()
+  p = [float(line.split('#')[0]) for line in lines[0:n_params]]
 
   params = {}
   params['infilt'] = p[0]
@@ -89,8 +90,8 @@ def kge(obs, pred):
   r = corrcoef(pred, obs)[0, 1]
   alpha = std(pred) / std(obs)
   beta = mean(pred) / mean(obs)
-  gramma = alpha / beta
-  return 1 - sqrt((r - 1) ** 2 + (beta - 1) ** 2 + (gramma - 1) ** 2)
+  gamma = alpha / beta
+  return 1 - sqrt((r - 1) ** 2 + (beta - 1) ** 2 + (gamma - 1) ** 2)
 
 
 def compute_obj(input_dir, begin_date, end_date):
@@ -141,5 +142,5 @@ if __name__ == '__main__':
   updated_params = read_params()
   modify_params(updated_params)
   run_vic()
-  obj = compute_obj('input_symln', pd.Timestamp('1981-01-01'), pd.Timestamp('1988-01-01'))
+  obj = compute_obj('input_symln', pd.Timestamp('1981-01-01'), pd.Timestamp('2000-12-31'))
   write_output(obj)

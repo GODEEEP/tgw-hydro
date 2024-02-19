@@ -5,6 +5,10 @@ import sys
 import shutil
 import glob
 import subprocess
+from time import time
+from datetime import timedelta
+import numpy as np
+from run_vic import read_params, modify_params
 
 # upper and lower limits of calibration parameters
 plim_ctr = [
@@ -18,8 +22,27 @@ plim_ctr = [
     [8, 30],  # expt3: [8, 30], ['-20%', '20%']
 ]
 
+vic_input_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2'
 
-def run_calibration(path_csv, point_id, path_output):
+# the period to use for calibration, first 2 years are spin up time
+calib_start_year = 1979
+calib_end_year = 2000
+
+# after the calibration, we do a full run of the entire period
+full_run_start_year = 1979
+full_run_end_year = 2019
+
+
+def run_calibration(path_csv, path_output, point_id):
+
+  start = time()
+
+  # write in progress output to a temporary location for speed
+  cwd = os.getcwd()
+  print(cwd)
+  final_path_output = path_output
+  path_output = '/dev/shm'
+
   grid_ids = pd.read_csv(path_csv)
   row = grid_ids[grid_ids.id == point_id]
   lon = row.lon.values[0]
@@ -29,11 +52,14 @@ def run_calibration(path_csv, point_id, path_output):
   # create an output folder and symlink to the input folder
   id_ll = f'{point_id:07}_{lon:0.5f}_{lat:0.5f}'
   point_subdir = f'{huc2_code:02}/{id_ll}'
-  input_path = f'/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/{point_subdir}'
+  input_path = f'{vic_input_dir}/{point_subdir}'
+
   subpath_output = f'{path_output}/{id_ll}'
   os.makedirs(subpath_output, exist_ok=True)
   if not os.path.islink(f'{subpath_output}/input_symln'):
-    os.symlink(input_path, f'{subpath_output}/input_symln')
+    # copy the forcing data to memory for speed
+    os.system(f"cp -r {input_path} {subpath_output}/input_symln")
+    # os.symlink(input_path, f'{subpath_output}/input_symln')
 
   # aggregate forcing files into 6 hours and save in the same input folder, "forcings_6h_16thdeg_*.nc"
   # concatenate runoff files into one single file not to repeat during calibrations
@@ -53,15 +79,15 @@ def run_calibration(path_csv, point_id, path_output):
 
     files_runoff = glob.glob(f'{input_path}/runoff_16thdeg_{id_ll}_*.nc')
     files_runoff.sort()
-    filename_runoff = f'/runoff_concat_16thdeg_{id_ll}_{files_runoff[0].split("_")[-1][:4]}-{files_runoff[-1].split("_")[-1][:4]}.nc'
+    filename_runoff = f'/runoff_concat_16thdeg_{id_ll}_' + \
+                      f'{files_runoff[0].split("_")[-1][:4]}-{files_runoff[-1].split("_")[-1][:4]}.nc'
     if not os.path.isfile(f'{input_path}/{filename_runoff}'):
       ds = xr.open_mfdataset(files_runoff, concat_dim='time', combine='nested', decode_coords='all')
+      ds = ds.load()
       ds.to_netcdf(f'{input_path}/{filename_runoff}')
       ds.close()
 
   update_forcing_runoff(f'{subpath_output}/input_symln')
-
-  # return None
 
   # check if the calibration is done already, if so, end here
   calib_progress_file = f'{subpath_output}/OstStatus0.txt'
@@ -86,7 +112,7 @@ def run_calibration(path_csv, point_id, path_output):
 
   # extract the initial values from VICGlobal
   p = []
-  with xr.open_dataset(f'{subpath_output}/params.nc') as ds:
+  with xr.load_dataset(f'{subpath_output}/params.nc') as ds:
     for s in ['infilt', 'Dsmax', 'Ds', 'Ws', 'depth2', 'depth3', 'expt2', 'expt3']:
       if s.startswith('depth'):
         p.append(float(ds['depth'].isel(lon=0, lat=0, nlayer=int(s[-1]) - 1)))
@@ -169,7 +195,7 @@ EndDDS
   '''
 
   # use symlink path
-  vic_config = f'''\
+  vic_config = '''\
 # ######################################################################
 # Simulation Parameters
 # ######################################################################
@@ -177,10 +203,10 @@ MODEL_STEPS_PER_DAY   4  # number of model time steps in 24 hour period
 SNOW_STEPS_PER_DAY    4  # number of snow model time steps in 24 hour period
 RUNOFF_STEPS_PER_DAY  4  # number of runoff time steps in 24 hour period
 
-STARTYEAR             1979 # year model simulation starts
+STARTYEAR             {start_year} # year model simulation starts
 STARTMONTH            1    # month model simulation starts
 STARTDAY              1    # day model simulation starts
-ENDYEAR               1987
+ENDYEAR               {end_year}
 ENDMONTH              12
 ENDDAY                31
 CALENDAR              PROLEPTIC_GREGORIAN
@@ -239,17 +265,6 @@ OUTVAR      OUT_EVAP
 OUTVAR      OUT_SWE
 '''
 
-  # write the files specific to each cell
-  f = open(f'{subpath_output}/vic.in', 'w')
-  f.write(vic_in)
-  f.close()
-  f = open(f'{subpath_output}/ostIn.txt', 'w')
-  f.write(ostIn_txt)
-  f.close()
-  f = open(f'{subpath_output}/config.txt', 'w')
-  f.write(vic_config)
-  f.close()
-
   # this is a hack to pass the input data directory to the model
   # wrapper script avoids some duplicate code
   # f = open(f'{subpath_output}/input_dir.txt', 'w')
@@ -257,8 +272,17 @@ OUTVAR      OUT_SWE
   # f.close()
 
   os.chdir(subpath_output)
+  print(subpath_output)
 
-  print('Running uncalibrated')
+  # write the files specific to each cell
+  with open('vic.in', 'w') as f:
+    f.write(vic_in)
+  with open('ostIn.txt', 'w') as f:
+    f.write(ostIn_txt)
+  with open('config.txt', 'w') as f:
+    f.write(vic_config.format(start_year=calib_start_year, end_year=calib_end_year, id_ll=id_ll))
+
+  # print('Running uncalibrated')
   # run the uncalibrated case
   if os.path.isdir('nocalib'):
     shutil.rmtree('nocalib')
@@ -267,7 +291,7 @@ OUTVAR      OUT_SWE
   subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # return None
-  
+
   # copy output files
   # some grid cells are in the ocean and the runs may fail
   vic_runoff = 'vic_runoff.1979-01-01.nc'
@@ -275,15 +299,47 @@ OUTVAR      OUT_SWE
     shutil.move(vic_runoff, f'nocalib/{vic_runoff}')
     shutil.copy('params.nc', './nocalib/params_updated.nc')
   else:
-    # the run failed, so just bail out 
+    # remove binaries to save space
+    os.system(f'rm vic_image.exe Ostrich')
+    # the run failed, so just bail out
     sys.exit()
+    pass
 
   print('Running calibration')
-  # run the calibration, takes a few hours
-  subprocess.run(['time','./Ostrich', '>', '/dev/null'])
+  # # run the calibration, takes a few hours
+  subprocess.run(['time', './Ostrich', '>', '/dev/null'])
+
+  # Do a full period run with the final parameters
+  with open('config.txt', 'w') as f:
+    f.write(vic_config.format(start_year=full_run_start_year, end_year=full_run_end_year, id_ll=id_ll))
+
+  # make sure the param file is updated
+  params = read_params()
+  modify_params(params)
+
+  subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # remove binaries to save space
-  os.system(f'rm vic_image.exe Ostrich')
+  os.system(f'rm vic_image.exe Ostrich run_vic.py')
+
+  os.chdir(cwd)
+
+  # create the final output dir
+  # copy the whole output directory to the hard disk
+  final_subpath_output = f'{final_path_output}/{id_ll}'
+  os.makedirs(final_subpath_output, exist_ok=True)
+  print(f"copying from {subpath_output} to {final_path_output}")
+  # os.system(f"cp -r {subpath_output} {final_path_output}")
+  # copy the output directory to its final location, but exclude the forcing data
+  os.system(f'rsync -av --progress {subpath_output} {final_path_output} --exclude input_symln')
+  print(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
+  os.system(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
+  # os.symlink(input_path, f'{final_path_output}/input_symln')
+
+  # remove the temporary directory
+  os.system(f'rm -rf {subpath_output}')
+
+  print("Calibration took:", str(timedelta(seconds=np.round(time() - start))))
 
 
 if __name__ == '__main__':
@@ -291,11 +347,11 @@ if __name__ == '__main__':
   if len(sys.argv[3].split(',')) == 1:
     path_csv, path_output, idx = sys.argv[1], sys.argv[2], int(sys.argv[3])
     print(f'Running calibration for point {idx}')
-    run_calibration(path_csv, idx, path_output)
+    run_calibration(path_csv, path_output, idx)
     print(f'Done with calibration for point {idx}')
   else:
     path_csv, path_output = sys.argv[1], sys.argv[2]
     for idx in sys.argv[3].split(','):
       print(f'Running calibration for point {idx}')
-      run_calibration(path_csv, idx, path_output)
+      run_calibration(path_csv, path_output, idx)
       print(f'Done with calibration for point {idx}')

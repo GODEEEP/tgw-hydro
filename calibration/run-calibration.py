@@ -27,10 +27,12 @@ vic_input_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2'
 # the period to use for calibration, first 2 years are spin up time
 calib_start_year = 1979
 calib_end_year = 2000
+calib_snow_band = 'FALSE'
 
 # after the calibration, we do a full run of the entire period
 full_run_start_year = 1979
 full_run_end_year = 2019
+full_run_snow_band = 'TRUE'
 
 
 def run_calibration(path_csv, path_output, point_id):
@@ -87,8 +89,6 @@ def run_calibration(path_csv, path_output, point_id):
       ds.to_netcdf(f'{input_path}/{filename_runoff}')
       ds.close()
 
-  update_forcing_runoff(f'{subpath_output}/input_symln')
-
   # check if the calibration is done already, if so, end here
   calib_progress_file = f'{subpath_output}/OstStatus0.txt'
   if os.path.exists(calib_progress_file):
@@ -97,6 +97,8 @@ def run_calibration(path_csv, path_output, point_id):
       pct_complete = reader.read().split('\n')[2].split(':')[1]
       if float(pct_complete) == 100:
         return None
+
+  update_forcing_runoff(f'{subpath_output}/input_symln')
 
   print('Preparing calibration')
   # copy model and calibration files
@@ -243,7 +245,7 @@ FORCE_TYPE    WIND         WSPEED  # Wind speed, m/s
 # Land Surface Files and Parameters
 # ######################################################################
 PARAMETERS          params_updated.nc
-SNOW_BAND           FALSE
+SNOW_BAND           {snow_band}
 BASEFLOW            ARNO
 JULY_TAVG_SUPPLIED  FALSE
 LAI_SRC             FROM_VEGPARAM
@@ -261,8 +263,8 @@ AGGFREQ     NDAYS   1  # Write output every 1 day
 OUT_FORMAT  NETCDF4
 OUTVAR      OUT_RUNOFF
 OUTVAR      OUT_BASEFLOW
-OUTVAR      OUT_EVAP
-OUTVAR      OUT_SWE
+{out_evap}OUTVAR      OUT_EVAP
+{out_swe}OUTVAR      OUT_SWE
 '''
 
   # this is a hack to pass the input data directory to the model
@@ -280,7 +282,9 @@ OUTVAR      OUT_SWE
   with open('ostIn.txt', 'w') as f:
     f.write(ostIn_txt)
   with open('config.txt', 'w') as f:
-    f.write(vic_config.format(start_year=calib_start_year, end_year=calib_end_year, id_ll=id_ll))
+    f.write(vic_config.format(start_year=calib_start_year, end_year=calib_end_year, id_ll=id_ll, snow_band=calib_snow_band, out_evap='#', out_swe='#'))
+  with open('config_final.txt', 'w') as f:
+    f.write(vic_config.format(start_year=full_run_start_year, end_year=full_run_end_year, id_ll=id_ll, snow_band=full_run_snow_band, out_evap='', out_swe=''))
 
   # print('Running uncalibrated')
   # run the uncalibrated case
@@ -288,13 +292,14 @@ OUTVAR      OUT_SWE
     shutil.rmtree('nocalib')
   os.makedirs('nocalib', exist_ok=True)
 
-  subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
+  # run VIC with the production configuration before calibration
+  subprocess.run(['./vic_image.exe', '-g', 'config_final.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # return None
 
   # copy output files
   # some grid cells are in the ocean and the runs may fail
-  vic_runoff = 'vic_runoff.1979-01-01.nc'
+  vic_runoff = 'vic_runoff.{}-01-01.nc'.format(full_run_start_year)
   if os.path.exists(vic_runoff):
     shutil.move(vic_runoff, f'nocalib/{vic_runoff}')
     shutil.copy('params.nc', './nocalib/params_updated.nc')
@@ -310,14 +315,12 @@ OUTVAR      OUT_SWE
   subprocess.run(['time', './Ostrich', '>', '/dev/null'])
 
   # Do a full period run with the final parameters
-  with open('config.txt', 'w') as f:
-    f.write(vic_config.format(start_year=full_run_start_year, end_year=full_run_end_year, id_ll=id_ll))
-
   # make sure the param file is updated
   params = read_params()
   modify_params(params)
 
-  subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
+  # run VIC with the production configuration after calibration
+  subprocess.run(['./vic_image.exe', '-g', 'config_final.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # remove binaries to save space
   os.system(f'rm vic_image.exe Ostrich run_vic.py')
@@ -332,8 +335,8 @@ OUTVAR      OUT_SWE
   # os.system(f"cp -r {subpath_output} {final_path_output}")
   # copy the output directory to its final location, but exclude the forcing data
   os.system(f'rsync -av --progress {subpath_output} {final_path_output} --exclude input_symln')
-  print(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
-  os.system(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
+  print(f'ln -sf {input_path} {final_path_output}/{id_ll}/input_symln')
+  os.system(f'ln -sf {input_path} {final_path_output}/{id_ll}/input_symln')
   # os.symlink(input_path, f'{final_path_output}/input_symln')
 
   # remove the temporary directory

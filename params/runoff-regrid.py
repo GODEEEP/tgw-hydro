@@ -6,7 +6,7 @@ import os
 
 runoff_data_dir = '/Volumes/data/tgw-hydro/GRFR_runoff/global'
 subset_output_dir = '/Volumes/data/tgw-hydro/GRFR_runoff/conus'
-years = list(range(2000, 2019+1))
+years = list(range(1979, 1999+1))
 
 # domain including conus and most of canada
 lon_slice = slice(-140, -55)

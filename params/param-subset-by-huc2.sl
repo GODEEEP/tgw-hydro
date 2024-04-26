@@ -22,6 +22,6 @@ module load cdo
 
 echo 'Done loading modules'
 
-srun python -u huc2-subset-params-domain.py
+srun python -u param-subset-by-huc2.py
 
 echo 'Really Done'

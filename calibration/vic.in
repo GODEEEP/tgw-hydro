@@ -1,8 +1,9 @@
-4.450916E-02 # Variable infitration parameter
-4.100569E+00  # Max velocity of base flow
-1.296830E-01    # Fraction of where nonlinear base flow occurs
-9.725847E-01     # Fraction of maximum soil moisture where non-linear baseflow occurs
-9.709305E-01 # Thickness of soil moisture layer 2
-7.651295E-01 # Thickness of soil moisture layer 3
-2.631682E+01  # Brooks-Corey baseflow parameter layer 2
-1.593378E+01  # Brooks-Corey baseflow parameter layer 3
+0.2000 # Variable infitration parameter
+26.9837 # Max velocity of base flow
+0.0010 # Fraction of where nonlinear base flow occurs
+0.9000 # Fraction of maximum soil moisture where non-linear baseflow occurs
+0.2000 # Thickness of soil moisture layer 2
+0.7000 # Thickness of soil moisture layer 3
+10.5800 # Brooks-Corey baseflow parameter layer 2
+10.5800 # Brooks-Corey baseflow parameter layer 3
+  

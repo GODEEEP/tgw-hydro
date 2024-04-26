@@ -1,41 +1,40 @@
 #!/usr/bin/env /bin/bash
 
-# huc2=17
-huc2=18
+huc2=15
 
 csv_in=../data/grid_ids_conus.csv
 path_out=/vast/projects/godeeep/VIC/calibration/$huc2 
 
-# huc2      n first_id
-# <chr> <int>    <dbl>
-# 01     5755        1
-# 02     7491     5756
-# 03    18192    13247
-# 04    24748    31439
-# 05    11200    56187
-# 06     2694    67387
-# 07    13883    70081
-# 08     6829    83964
-# 09     8074    90793
-# 10    38644    98867
-# 11    16464   137511
-# 12    11476   153975
-# 13    14443   165451
-# 14     7833   179894
-# 15    10623   187727
-# 16     9878   198350
-# 17    24923   208228
-# 18    11390   233151
+# huc2      n first_id last_id
+# 01     5755        1    5755
+# 02     7491     5756   13246
+# 03    18192    13247   31438
+# 04    24748    31439   56186
+# 05    11200    56187   67386
+# 06     2694    67387   70080
+# 07    13883    70081   83963
+# 08     6829    83964   90792
+# 09     8074    90793   98866
+# 10    38644    98867  137510
+# 11    16464   137511  153974
+# 12    11476   153975  165450
+# 13    14443   165451  179893
+# 14     7833   179894  187726
+# 15    10623   187727  198349
+# 16     9878   198350  208227
+# 17    24923   208228  233150
+# 18    11390   233151  244540
 
-# total number of points to process
-# x = pd.read_csv('data/grid_ids_conus.csv')
-# x[x.huc2==key].shape[0]
-# total_points=24923
-total_points=11390 # 18
-# start and end ids of huc2 17 - columbia 
-# first_id=208228
-first_id=233151 # 18
-# last_id=233150
+index=$((huc2-1))
+first_ids=(1 5756 13247 31439 56187 67387 70081 83964 90793 98867 137511 153975 165451 179894 187727 198350 208228 233151)
+total_points_array=(5755 7491 18192 24748 11200 2694 13883 6829 8074 38644 16464 11476 14443 7833 10623 9878 24923 11390)
+
+first_id=${first_ids[$index]}
+total_points=${total_points_array[$index]}
+
+# echo "Running calibration for HUC2: $huc2"
+# echo "First ID: $first_id"
+# echo "Total Points: $total_points"
 
 # total number of nodes used to run this job, defined in run-calibration.sl
 total_nodes=$SLURM_JOB_NUM_NODES
@@ -49,7 +48,7 @@ fi
 
 points=( $(seq $start_id $end_id) )
 
-echo "NODE $SLURM_NODEID: points $start_id - $end_id"
+echo "HUC2 $huc2 NODE $SLURM_NODEID: points $start_id - $end_id"
 
 export OMP_NUM_THREADS=1
 

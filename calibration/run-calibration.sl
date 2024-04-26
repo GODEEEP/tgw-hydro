@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -A godeeep
-#SBATCH -N 10
+#SBATCH -N 15
 #SBATCH --ntasks-per-node 1
 #SBATCH -p slurm
 #SBATCH -t 72:00:00

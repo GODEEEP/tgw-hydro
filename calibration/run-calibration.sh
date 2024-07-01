@@ -1,9 +1,9 @@
 #!/usr/bin/env /bin/bash
 
-huc2=15
+huc2=9
 
 csv_in=../data/grid_ids_conus.csv
-path_out=/vast/projects/godeeep/VIC/calibration/$huc2 
+path_out=/vast/projects/godeeep/VIC/calibration/$(printf "%02d" $huc2)
 
 # huc2      n first_id last_id
 # 01     5755        1    5755

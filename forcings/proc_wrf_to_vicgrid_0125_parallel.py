@@ -8,7 +8,6 @@ parallelized by Travis Thurber
 see associated sh and sl scripts
 
 modified by Cameron Bracken 9 Aug 2023 to process the full period 1979-2022
-modified by Cameron Bracken 27 Oct 2023 to extend the grid to include as much of canada as possible
 """
 
 import xarray as xr
@@ -32,11 +31,10 @@ def method(i: int = 1):
   wrf_dir = '/rcfs/projects/godeeep/shared_data/tgw_wrf/tgw_wrf_historic/hourly/'
 
   # set dir for processed data
-  # out_dir = '/qfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/'
-  out_dir = '/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical/'
+  out_dir = '/rcfs/projects/godeeep/VIC/forcings/1_8_deg/CONUS_TGW_WRF_Historical/'
 
   # set label to append to output files
-  file_label = '00625vic'
+  file_label = '0125vic'
 
   """
   wrf data dir must have either data from the start of the WRF simulation period or
@@ -68,9 +66,9 @@ def method(i: int = 1):
   # print('file list: ', file_list)
   nfile = len(file_list)
 
-  # construct the 1/16 degree grid
-  lat = np.arange(24.03125, 56.03125, 0.0625)
-  lon = np.arange(-129.96875, -65.09375, 0.0625)
+  # construct the 1/8 degree grid
+  lat = np.arange(24.0625, 56.0625, 0.125)
+  lon = np.arange(-129.9375, -65.1875, 0.125)
 
   # subset forcings
   subset_flag = False
@@ -82,6 +80,12 @@ def method(i: int = 1):
   max_lon = -109.84375
 
   wrf_file = file_list[i]
+
+  file_out = out_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
+
+  if os.path.exists(file_out):
+    print(f'Skipping file {i} {wrf_file}')
+    return 
 
   # read in 'init' file
   if init_file_flag == 1 and i == 0:
@@ -207,7 +211,6 @@ def method(i: int = 1):
     wrf_data_out = wrf_data_wgs84_subset.rename({'x': 'lon', 'y': 'lat'})
 
     # write out data
-    file_out = out_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
     wrf_data_out.to_netcdf(path=file_out)
 
     # subset
@@ -223,9 +226,8 @@ def method(i: int = 1):
     wrf_data_out.close()
 
     runtime = round(time.time() - start_time, 2)
-    print("Processing completed in {0} minutes for file {1} {2}".format(runtime/60, i, os.path.basename(wrf_file)))
+    print("Processing completed in {0} seconds for file {1} {2}".format(runtime, i, os.path.basename(wrf_file)))
 
 
 if __name__ == "__main__":
   method(int(sys.argv[1]))
-

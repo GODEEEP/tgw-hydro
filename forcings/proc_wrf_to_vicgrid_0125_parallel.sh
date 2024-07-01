@@ -8,5 +8,5 @@ last=$((last>nfiles ? nfiles : last))
 
 for i in $(seq $first $last)
 do
-  python -u proc_wrf_to_vicgrid_00625_parallel.py $i
+  python proc_wrf_to_vicgrid_0125_parallel.py $i
 done

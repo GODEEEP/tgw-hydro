@@ -27,11 +27,11 @@ year=${years[worker_index]}
 
 echo "Worker $SLURM_PROCID is processing year: $year"
 
-yearfile="tgw-conus-forcings-year/tgw_forcing_d01_00625vic_${year}.nc"
+yearfile="/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical_year_files/tgw_forcing_d01_00625vic_${year}.nc"
 
 if [ ! -f "$yearfile" ]; then
   echo "Processing year $year: $yearfile"
-  cdo -w cat "tgw-conus-forcings/tgw_wrf_historic_hourly_${year}*.nc" "$yearfile"
+  cdo -w cat "/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical/tgw_wrf_historic_hourly_${year}*.nc" "$yearfile"
   echo "Year $year processing complete"
 else
   echo "Year $year: $yearfile already exists. Skipping."

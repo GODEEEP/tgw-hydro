@@ -26,7 +26,8 @@ def process_year(y, input_dir, output_dir):
 
   grid_ids = pd.read_csv('../data/grid_ids_conus.csv')
 
-  for n, cell in tqdm(grid_ids.iterrows(), total=grid_ids.shape[0]):
+  # for h, huc2 in tqdm(huc2_shp.iterrows(), total=len(huc2_shp.geometry), desc=" huc2", position=0):
+  for n, cell in tqdm(grid_ids.iterrows()):
 
     i = int(cell.id)
     huc2_code = int(cell.huc2)
@@ -57,7 +58,8 @@ def process_year(y, input_dir, output_dir):
 
 if __name__ == "__main__":
   # output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
-  output_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
-  # output_dir = '/vast/projects/godeeep/inputs_1_16_deg_by_huc2/'
-  input_dir = '/vast/projects/godeeep/conus_tgw_1_16_deg_historical_year_files/'
+  # output_dir = '/rcfs/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
+  output_dir = '/vast/projects/godeeep/VIC/inputs_1_16_deg_by_huc2/'
+  input_dir = '/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical_year_files/'
   process_year(sys.argv[1], input_dir, output_dir)
+

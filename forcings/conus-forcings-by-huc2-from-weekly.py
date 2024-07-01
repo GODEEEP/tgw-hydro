@@ -11,8 +11,8 @@ Create VIC forcing files specific for one grid point directly using the weekly T
 '''
 
 # input path for the weekly TGW forcing datasets (processed)
-#input_files = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/tgw_wrf_historic_hourly_{}*'
-input_files = '/vast/projects/godeeep/conus_tgw_1_16_deg_historical/tgw_wrf_historic_hourly_{}*'
+input_files = '/rcfs/projects/godeeep/VIC/forcings/1_8_deg/CONUS_TGW_WRF_Historical/tgw_wrf_historic_hourly_{}*'
+# input_files = '/vast/projects/godeeep/conus_tgw_1_16_deg_historical/tgw_wrf_historic_hourly_{}*'
 
 xr.set_options(keep_attrs = True)
 def subset_file(year, output_dir, nthread):

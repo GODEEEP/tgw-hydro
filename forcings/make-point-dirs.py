@@ -20,5 +20,7 @@ def subset_file(output_dir):
 
 
 if __name__ == "__main__":
-  output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
+  # output_dir = '/rcfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical_Grid_Year_Files/'
+  output_dir = '/vast/projects/godeeep/CONUS_TGW_WRF_Historical_Grid/'
   subset_file(output_dir)
+

@@ -1,0 +1,31 @@
+simulation:
+  name: tutorial
+  start_date: 1981-05-24
+  end_date: 1981-05-26
+
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+    - 47.6062,-122.3321
+    - 45.5152,-122.6784
+  unmask_output: true
+
+runoff:
+  read_from_file: true
+  path: ./input/runoff/runoff_1981_05.nc
+
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/demand_1981_05.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

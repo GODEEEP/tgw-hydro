@@ -11,3 +11,5 @@ ostrich/
 dPLHBVrelease/
 calibration/*
 params/*.nc
+qaqc/*.nc
+qaqc/*.txt

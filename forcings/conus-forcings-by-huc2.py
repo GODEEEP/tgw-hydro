@@ -13,7 +13,7 @@ Author: Cameron Bracken 10-19-2023
 
 Create VIC forcing files specific for one grid point, and organize the files by HUC2
 '''
-
+xr.set_options(keep_attrs = True)
 
 def process_year(y, input_dir, output_dir):
 
@@ -35,6 +35,14 @@ def process_year(y, input_dir, output_dir):
     lon = cell.lon
 
     point_forcing = forcing.sel(lat=slice(lat, lat), lon=slice(lon, lon))
+
+    # Y.Son: added for rechunking to save storage,
+    # sensitive to xarray versions, reference: https://github.com/Ouranosinc/xscen/pull/379/files/92ba3a57c2c6c2a80db2226769fdbc36b218c42e
+    for var in list(point_forcing.data_vars.keys()):
+      point_forcing[var].encoding.pop('original_shape', None)
+      if len(point_forcing[var].shape) > 0:
+        point_forcing[var].encoding['chunksizes'] = point_forcing[var].shape
+    point_forcing.encoding = {'unlimited_dims': ['time']}
 
     # make a subdirectory for each grid point
     point_dir = f'{output_dir}/{huc2_code:02}/{i:07}_{lon:0.5f}_{lat:0.5f}'

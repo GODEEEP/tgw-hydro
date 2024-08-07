@@ -89,7 +89,7 @@ for (i in 1:length(huc2s)) {
     ungroup()
 
   # set up weekly time sequence
-  tibble(
+  sequence_weekly <- tibble(
     date_time = seq(as.POSIXct("2001-01-01 00:00:00"),
       as.POSIXct(sprintf(
         "%s-12-31 23:00:00",
@@ -124,8 +124,7 @@ for (i in 1:length(huc2s)) {
           rename(datetime = date)
       }
     ) |>
-    bind_rows() ->
-  sequence_weekly
+    bind_rows()
 
   # build the complete dataset for weekly, include 12 lagged variables
   complete_data_weekly <- outflow |>
@@ -151,7 +150,7 @@ for (i in 1:length(huc2s)) {
         plant[[paste0("outflow_tm", lagi)]] <- lag(plant$outflow, lagi)
         plant[[paste0("inflow_tm", lagi)]] <- lag(plant$inflow, lagi)
         plant[[paste0("storage_tm", lagi)]] <- lag(plant$storage, lagi)
-        # plant[[paste0("power_tm", lagi)]] <- lag(plant$power_mwh, lagi)
+        plant[[paste0("power_tm", lagi)]] <- lag(plant$power_mwh, lagi)
       }
       plant |> na.omit()
     }) |>
@@ -197,7 +196,7 @@ for (i in 1:length(huc2s)) {
       .groups = "drop"
     ) |>
     mutate(n_hours = days_in_month(datetime) * 24) |>
-    # inner_join(b1_monthly, by = join_by(datetime, eia_id)) |>
+    inner_join(b1_monthly, by = join_by(datetime, eia_id)) |>
     group_by(eia_id) |>
     group_split() %>% # .[[1]] -> plant
     map(function(plant) {
@@ -205,7 +204,7 @@ for (i in 1:length(huc2s)) {
         plant[[paste0("outflow_tm", lagi)]] <- lag(plant$outflow, lagi)
         plant[[paste0("inflow_tm", lagi)]] <- lag(plant$inflow, lagi)
         plant[[paste0("storage_tm", lagi)]] <- lag(plant$storage, lagi)
-        # plant[[paste0("power_tm", lagi)]] <- lag(plant$power_mwh, lagi)
+        plant[[paste0("power_tm", lagi)]] <- lag(plant$power_mwh, lagi)
       }
       plant |> na.omit()
     }) |>

@@ -22,6 +22,9 @@ huc2_names = [
     "lowercolorado", "greatbasin", "columbia", "california"
 ]
 
+huc2s = [6]
+huc2_names = ["tennessee_rcp45cooler"]
+
 
 def nearest_grid_index_from_points(var, plants):
 

@@ -11,7 +11,7 @@ options(
 huc2_nums <- 1:18
 
 dam_shape <- st_read("../mosart/mosartwmpy_conus_EHA_v1.0/mosartwmpy_conus_EHA_v1.0_with_HUC2.shp")
-huc2_shape <- st_read("../data/HUC2/HUC2.shp")
+huc2_shape <- st_read("/Volumes/data/shapefiles/HUC2/HUC2.shp")
 grid_conus <- read_csv("../data/grid_ids_conus.csv")
 
 full_grid_list <- full_grid_missing_list <- list()
@@ -111,9 +111,9 @@ for (huc2_num in huc2_nums) {
 full_grid <- bind_rows(full_grid_list)
 full_grid_missing <- bind_rows(full_grid_missing_list)
 p_kge_conus <- kge_plot(
-  # full_grid, full_grid_missing,
-  dam_shape |> filter(HUC2 %in% huc2_nums) # ,
-  # huc2_shape
+  full_grid, full_grid_missing,
+  dam_shape |> filter(HUC2 %in% huc2_nums),
+  huc2_shape
 )
 p_kge_conus
 ggsave("plots/kge_conus.png", p_kge_conus, width = 16, height = 8, dpi = 300)
@@ -122,3 +122,41 @@ ggsave("plots/kge_conus.png", p_kge_conus, width = 16, height = 8, dpi = 300)
 #   geom_raster(aes(lon, lat, fill = value)) +
 #   scale_fill_continuous(limits = c(0, 1)) +
 #   scale_y_continuous(breaks = 40:55)
+
+p_kge_conus_calib_only <- full_grid |>
+  na.omit() |>
+  pivot_longer(-c(huc2, id, lon, lat), names_to = "kge") |>
+  filter(kge == "kge_calib") |>
+  ggplot() +
+  geom_raster(aes(lon, lat, fill = value)) +
+  theme_void() +
+  theme(panel.grid = element_blank(), legend.position = "inside", legend.position.inside = c(.9, .25)) +
+  scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
+  geom_sf(data = dam_shape |> filter(HUC2 %in% huc2_nums), alpha = 0)
+p_kge_calib_only
+ggsave("plots/kge_conus_calib.png", p_kge_conus_calib_only, width = 8, height = 6, dpi = 300)
+
+power_monthly <- read_csv("../mosart/godeeep-hydro/historical/godeeep-hydro-monthly.csv")
+p_power_constraints <- power_monthly |>
+  filter(datetime == as.Date("2018-07-01")) |>
+  pivot_longer(c(p_avg, p_max, p_min), names_to = "constraint") |>
+  mutate(
+    constraint = case_when(
+      constraint == "p_avg" ~ "Ave Power Target",
+      constraint == "p_min" ~ "Min Power",
+      constraint == "p_max" ~ "Max Power"
+    ),
+    constraint = factor(constraint, levels = c("Max Power", "Ave Power Target", "Min Power"))
+  ) |>
+  ggplot() +
+  geom_sf(data = huc2_shape, fill = grey(.95)) +
+  geom_point(aes(lon, lat, size = value, color = value), alpha = .6) +
+  theme_void() +
+  facet_wrap(~constraint, ncol = 1) +
+  scale_size_continuous("Power [MW]", range = c(1, 12), breaks = seq(0, 5000, by = 1000)) +
+  scale_color_viridis_c("Power [MW]", option = "G", breaks = seq(0, 5000, by = 1000)) +
+  guides(color = guide_legend(), size = guide_legend()) +
+  theme(legend.position = "inside", legend.position.inside = c(.88, .35))#+
+  # labs(title='Hydropower Constraints July 2018')
+p_power_constraints
+ggsave("plots/power_constraints.png", p_power_constraints, width = 5, height = 10, dpi = 300)

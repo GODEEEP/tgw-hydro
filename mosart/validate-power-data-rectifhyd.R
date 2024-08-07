@@ -10,8 +10,8 @@ options(
   pillar.width = 1e6
 )
 
-huc2 <- 17
-huc2_name <- "columbia"
+huc2 <- 6
+huc2_name <- "tennessee"
 read_dam_data <- function(fn, name) {
   fn |>
     read_csv() |>
@@ -29,7 +29,7 @@ storage <- "output/%s/dam_storage.csv" |>
   sprintf(huc2_name) |>
   read_dam_data("storage")
 
-rectifhyd <- "../data/RectifHyd_v1.2.1.csv" |>
+rectifhyd <- "../data/RectifHyd_v1.3.csv" |>
   read_csv() |>
   mutate(datetime = fast_strptime(sprintf("%s-%s-01", year, month), "%Y-%b-%d") |> as.Date()) |>
   rename_all(tolower) |>

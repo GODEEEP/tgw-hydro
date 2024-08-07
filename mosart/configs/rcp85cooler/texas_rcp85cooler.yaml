@@ -1,0 +1,47 @@
+simulation:
+  name: texas_rcp85cooler
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 31.3125,-93.6875
+  - 30.8125,-94.1875
+  - 31.0625,-94.1875
+  - 33.0625,-96.9375
+  - 31.8125,-97.3125
+  - 30.3125,-97.8125
+  - 30.8125,-98.4375
+  - 30.5625,-98.4375
+  - 30.6875,-98.4375
+  - 30.5625,-98.3125
+  - 30.4375,-97.9375
+  - 29.8125,-98.1875
+  - 29.4375,-97.4375
+  - 29.5625,-98.0625
+  - 29.6875,-98.0625
+  - 29.4375,-97.5625
+  - 29.4375,-97.5625
+  - 29.5625,-97.9375
+  - 29.5625,-98.0625
+  - 29.5625,-97.9375
+  - 30.6875,-95.0625
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: ./input/runoff/rcp85cooler/12/mosart_rcp85cooler_huc12_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

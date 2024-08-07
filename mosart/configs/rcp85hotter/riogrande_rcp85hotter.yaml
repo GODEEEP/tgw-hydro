@@ -1,0 +1,34 @@
+simulation:
+  name: riogrande_rcp85hotter
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 29.4375,-101.0625
+  - 26.5625,-99.1875
+  - 36.5625,-106.6875
+  - 36.1875,-106.4375
+  - 35.6798,-105.9149
+  - 33.1875,-107.1875
+  - 32.1279,-106.7238
+  - 37.6875,-106.8125
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: ./input/runoff/rcp85hotter/13/mosart_rcp85hotter_huc13_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

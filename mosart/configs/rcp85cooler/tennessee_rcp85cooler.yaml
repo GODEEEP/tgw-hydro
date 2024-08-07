@@ -1,0 +1,75 @@
+simulation:
+  name: tennessee_rcp85cooler
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 36.5625,-82.0625
+  - 36.4375,-82.4375
+  - 36.4375,-82.4375
+  - 36.1875,-81.8125
+  - 36.3125,-82.0625
+  - 36.3125,-82.0625
+  - 35.1875,-84.1875
+  - 36.1875,-83.4375
+  - 35.8125,-82.6875
+  - 35.6875,-82.5625
+  - 35.8125,-82.6875
+  - 35.8125,-82.6875
+  - 35.6875,-83.0625
+  - 35.9375,-83.5625
+  - 35.8125,-84.3125
+  - 35.1875,-83.6875
+  - 35.3125,-83.6875
+  - 35.1875,-83.4375
+  - 35.4375,-83.8125
+  - 35.1875,-83.0625
+  - 35.1875,-83.1875
+  - 35.1875,-83.1875
+  - 35.1875,-83.0625
+  - 35.1875,-83.0625
+  - 35.5625,-83.3125
+  - 35.3125,-83.8125
+  - 35.4375,-83.9375
+  - 35.4375,-83.9375
+  - 35.5625,-84.0625
+  - 36.1875,-84.0625
+  - 35.9375,-84.3125
+  - 35.5625,-84.8125
+  - 35.1875,-85.1875
+  - 35.0625,-85.5625
+  - 35.0625,-83.8125
+  - 35.0625,-83.9375
+  - 34.9375,-84.0625
+  - 35.1875,-84.3125
+  - 34.8125,-84.3125
+  - 35.0625,-84.5625
+  - 35.0625,-84.4375
+  - 35.0625,-84.6875
+  - 35.1875,-86.3125
+  - 37.0625,-88.3125
+  - 35.0625,-85.4375
+  - 34.4375,-86.3125
+  - 34.8125,-87.4375
+  - 34.8125,-87.5625
+  - 35.0625,-88.1875
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: ./input/runoff/rcp85cooler/06/mosart_rcp85cooler_huc06_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

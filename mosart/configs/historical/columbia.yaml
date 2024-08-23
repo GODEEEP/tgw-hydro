@@ -1,5 +1,5 @@
 simulation:
-  name: columbia
+  name: columbia_historical
   start_date: 1981-01-01
   end_date: 2019-12-31
 

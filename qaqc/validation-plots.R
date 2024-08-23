@@ -10,6 +10,8 @@ options(
   pillar.width = 1e6
 )
 
+output_dir <- "mosart-output"
+
 # huc2s <- c(10, 15, 16, 17, 18)
 # huc2_names <- c("missouri", "lowercolorado", "greatbasin", "columbia", "california")
 
@@ -55,8 +57,8 @@ for (i in 1:length(huc2s)) {
   #########################################################
   # Monthly
   #########################################################
-  power_monthly <- "output/%s/cross_validation_data_monthly.csv" |>
-    sprintf(huc2_name) |>
+  power_monthly <- "%s/%s_historical/cross_validation_data_monthly.csv" |>
+    sprintf(output_dir, huc2_name) |>
     read_csv()
 
   # compute drop-one year CV KGE
@@ -67,10 +69,11 @@ for (i in 1:length(huc2s)) {
       # kge_rf = KGE(power_mwh_pred, power_mwh),
       `hydrofixr original` = KGE(power_mwh_pred_lm1, power_mwh),
       `hydrofixr updated` = KGE(power_mwh_pred_lm2, power_mwh)
+      # `hydrofixr updated power transform` = KGE(power_mwh_pred_lm3, power_mwh)
     ) |>
     pivot_longer(-plant, values_to = "kge")
 
-  kge_monthly |> write_csv(sprintf("output/%s/cross_validation_stats_monthly.csv", huc2_name))
+  kge_monthly |> write_csv(sprintf("%s/%s_historical/cross_validation_stats_monthly.csv", output_dir, huc2_name))
   # print(problems(kge_monthly))
 
   kge_monthly_conus_list[[huc2]] <- kge_monthly |> mutate(
@@ -103,8 +106,8 @@ for (i in 1:length(huc2s)) {
   #########################################################
   # Weekly
   #########################################################
-  power_weekly <- "output/%s/cross_validation_data_weekly.csv" |>
-    sprintf(huc2_name) |>
+  power_weekly <- "%s/%s/cross_validation_data_weekly.csv" |>
+    sprintf(output_dir, huc2_name) |>
     read_csv()
 
   # compute drop-one year CV KGE
@@ -115,16 +118,18 @@ for (i in 1:length(huc2s)) {
       # kge_rf = KGE(power_mwh_pred, power_mwh),
       `hydrofixr original` = KGE(power_mwh_pred_lm1, power_mwh),
       `hydrofixr updated` = KGE(power_mwh_pred_lm2, power_mwh)
+      # `hydrofixr updated power transform` = KGE(power_mwh_pred_lm3, power_mwh),
+      `GLM` = KGE(power_mwh_pred_glm, power_mwh)
     ) |>
     pivot_longer(-plant, values_to = "kge")
-  
+
   kge_weekly_conus_list[[huc2]] <- kge_weekly |> mutate(
     huc2 = huc2,
     huc2_name = huc2_name,
     huc2_name_plot = huc2_names_plot[huc2_name]
   )
 
-  kge_weekly |> write_csv(sprintf("output/%s/cross_validation_stats_weekly.csv", huc2_name))
+  kge_weekly |> write_csv(sprintf("%s/%s/cross_validation_stats_weekly.csv", output_dir, huc2_name))
   # print(problems(kge_weekly))
 
   # compute ave for plot label
@@ -163,11 +168,11 @@ ave_kge_conus <- kge_conus |>
     .groups = "drop"
   ) |>
   mutate(
-    text = paste0("Ave KGE: ", round(kge, 3)),
+    text = paste0("Ave. KGE: ", round(kge, 3)),
     x = min_kge, y = Inf
   )
 
-p_kge_conus <- ggplot(kge_conus) +
+p_kge_conus <- ggplot(kge_conus |> filter(kge > -1.5)) +
   geom_histogram(aes(kge), bins = 30, color = "black") +
   facet_wrap(~name) +
   geom_text(aes(kge, y, label = text), vjust = 1.5, data = ave_kge_conus, hjust = 1.2) +
@@ -178,3 +183,19 @@ p_kge_conus <- ggplot(kge_conus) +
   labs(x = "KGE", y = "Number of plants", title = "CONUS")
 p_kge_conus
 ggsave("plots/power_kge_conus.png", p_kge_conus, width = 8, height = 6)
+
+p_kge_conus2 <- ggplot(kge_conus |> filter(kge > -1.5, name == "hydrofixr updated")) +
+  geom_histogram(aes(kge), bins = 30, color = "black") +
+  facet_wrap(~dataset) +
+  geom_text(aes(kge, y, label = text),
+    vjust = 1.5,
+    data = ave_kge_conus |> filter(kge > -1.5, name == "hydrofixr updated"),
+    hjust = 1.2
+  ) +
+  # geom_vline(aes(xintercept = kge), data = ave_kge_conus |> filter(kge > -1.5, name == "hydrofixr updated")) +
+  # facet_grid(dataset ~ name) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "KGE", y = "Number of plants")
+p_kge_conus2
+ggsave("plots/power_kge_conus_new_only.pdf", p_kge_conus2, width = 6, height = 3)

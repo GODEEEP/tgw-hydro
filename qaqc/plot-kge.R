@@ -110,13 +110,31 @@ for (huc2_num in huc2_nums) {
 }
 full_grid <- bind_rows(full_grid_list)
 full_grid_missing <- bind_rows(full_grid_missing_list)
-p_kge_conus <- kge_plot(
-  full_grid, full_grid_missing,
-  dam_shape |> filter(HUC2 %in% huc2_nums),
-  huc2_shape
-)
+p_kge_conus <- full_grid |>
+  rename(
+    `Validation Period [2001-2019]` = kge_valid,
+    `Calibration Period [1980-2000]` = kge_calib
+  ) |>
+  na.omit() |>
+  pivot_longer(-c(huc2, id, lon, lat), names_to = "kge") |>
+  ggplot() +
+  geom_raster(aes(lon, lat, fill = value)) +
+  facet_wrap(~kge, ncol = 1) +
+  theme_void() +
+  theme(panel.grid = element_blank()) +
+  scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
+  geom_sf(
+    data = dam_shape |> filter(HUC2 %in% huc2_nums),
+    color = "white", pch = 21, fill = "white", alpha = 0,
+    size = 0.6
+  ) +
+  # geom_sf(data = huc2_shape, fill = NA, size = 1, color = "grey") +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(.9, .55)
+  )
 p_kge_conus
-ggsave("plots/kge_conus.png", p_kge_conus, width = 16, height = 8, dpi = 300)
+ggsave("plots/kge_conus.pdf", p_kge_conus, width = 6, height = 8, dpi = 300)
 #
 # ggplot(kge_calib_long |> mutate(value = ifelse(value < 0, NA, value))) +
 #   geom_raster(aes(lon, lat, fill = value)) +
@@ -133,7 +151,7 @@ p_kge_conus_calib_only <- full_grid |>
   theme(panel.grid = element_blank(), legend.position = "inside", legend.position.inside = c(.9, .25)) +
   scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
   geom_sf(data = dam_shape |> filter(HUC2 %in% huc2_nums), alpha = 0)
-p_kge_calib_only
+p_kge_conus_calib_only
 ggsave("plots/kge_conus_calib.png", p_kge_conus_calib_only, width = 8, height = 6, dpi = 300)
 
 power_monthly <- read_csv("../mosart/godeeep-hydro/historical/godeeep-hydro-monthly.csv")
@@ -156,7 +174,7 @@ p_power_constraints <- power_monthly |>
   scale_size_continuous("Power [MW]", range = c(1, 12), breaks = seq(0, 5000, by = 1000)) +
   scale_color_viridis_c("Power [MW]", option = "G", breaks = seq(0, 5000, by = 1000)) +
   guides(color = guide_legend(), size = guide_legend()) +
-  theme(legend.position = "inside", legend.position.inside = c(.88, .35))#+
-  # labs(title='Hydropower Constraints July 2018')
+  theme(legend.position = "inside", legend.position.inside = c(.88, .35)) #+
+# labs(title='Hydropower Constraints July 2018')
 p_power_constraints
 ggsave("plots/power_constraints.png", p_power_constraints, width = 5, height = 10, dpi = 300)

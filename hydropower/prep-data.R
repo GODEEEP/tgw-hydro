@@ -21,10 +21,10 @@ huc2_names <- c(
   "lowercolorado", "greatbasin", "columbia", "california"
 )
 
-# huc2s <- c(10)
-# huc2_names <- c(
-# "missouri"
-# )
+huc2s <- c(10)
+huc2_names <- c(
+  "missouri"
+)
 
 scenarios <- c("historical", "rcp45cooler", "rcp45hotter", "rcp85cooler", "rcp85hotter")
 
@@ -199,7 +199,7 @@ for (i in 1:length(huc2s)) {
           plant[[paste0("power_tm", lagi)]] <- lag(plant$power_mwh, lagi) |> round(2)
         }
         plant |>
-          # this adds the plant name to all rows so that locations without plant 
+          # this adds the plant name to all rows so that locations without plant
           # names can be filtered out later
           fill(plant, .direction = "updown") |>
           filter(year(datetime) > 1981)

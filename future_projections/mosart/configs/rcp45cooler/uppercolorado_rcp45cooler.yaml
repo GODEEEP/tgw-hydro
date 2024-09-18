@@ -1,0 +1,85 @@
+simulation:
+  name: uppercolorado_rcp45cooler
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+  output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 36.8125,-107.5625
+  - 36.8125,-108.0625
+  - 39.5625,-107.1875
+  - 39.9375,-106.3125
+  - 39.0625,-107.9375
+  - 39.1875,-108.0625
+  - 39.3125,-106.8125
+  - 40.1875,-105.8125
+  - 39.1013,-108.3457
+  - 39.9375,-106.1875
+  - 39.5625,-106.0625
+  - 39.1638,-106.8805
+  - 39.4375,-106.6875
+  - 39.4229,-107.3042
+  - 39.0625,-108.1875
+  - 39.3752,-107.0276
+  - 39.6122,-107.6642
+  - 39.5929,-107.6635
+  - 39.0941,-108.5598
+  - 38.4375,-107.3125
+  - 38.5625,-107.6875
+  - 38.4375,-107.4375
+  - 38.1875,-107.8125
+  - 38.4538,-107.7717
+  - 38.4039,-107.8103
+  - 38.9375,-108.4375
+  - 38.0625,-107.6875
+  - 38.0141,-107.312
+  - 38.8364,-107.7486
+  - 38.4884,-107.7983
+  - 38.9747,-107.955
+  - 38.8231,-107.7129
+  - 38.2942,-107.5697
+  - 37.5625,-108.5625
+  - 37.9375,-107.9375
+  - 39.434,-106.6135
+  - 37.9375,-107.8125
+  - 37.9309,-107.778
+  - 40.1875,-108.6875
+  - 40.3125,-106.8125
+  - 39.9946,-107.9176
+  - 39.9769,-107.9278
+  - 39.0625,-110.1875
+  - 37.4375,-107.5625
+  - 37.3125,-108.3125
+  - 37.4375,-107.6875
+  - 37.5625,-107.8125
+  - 37.8125,-107.8125
+  - 37.4065,-108.5398
+  - 38.879,-107.6163
+  - 38.2893,-107.5904
+  - 40.9375,-109.4375
+  - 42.0625,-110.0625
+  - 41.9375,-110.6875
+  - 40.5625,-110.3125
+  - 36.9375,-111.4375
+  - 38.0625,-111.5625
+  - 37.9375,-111.4375
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp45cooler/14/mosart_rcp45cooler_huc14_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

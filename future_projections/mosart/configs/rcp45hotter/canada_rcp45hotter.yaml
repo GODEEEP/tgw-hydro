@@ -1,0 +1,35 @@
+# Place your use-case specific settings overrides here.
+
+simulation:
+    # name this simulation
+    name: canada_rcp45hotter
+    # path to a directory for writing output files; will be created if it doesn't exist
+    output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+    # date to begin the simulation
+    start_date: 2018-01-01
+    # date to end the simulation
+    end_date: 2099-12-31
+
+grid:
+  subdomain: ~
+  unmask_output: true
+  path: /people/sony061/works/godeeep/mosartwmpy/inputs/MOSART_CA_8th_20240104_masked.nc
+
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp45hotter/00/mosart_rcp45hotter_huc00_8th_runoff_{Y}_{M}.nc
+
+water_management:
+  enabled: true
+  demand:
+    read_from_file: false
+    path: 
+  reservoirs:
+    parameters:
+      path: /people/sony061/works/godeeep/mosartwmpy/inputs/MOSART_CA_8th_reservoir.nc
+    dependencies:
+      path: /people/sony061/works/godeeep/mosartwmpy/inputs/MOSART_CA_8th_reservoir_demand_dependency.parquet
+    streamflow:
+      path: /people/sony061/works/godeeep/mosartwmpy/inputs/MOSART_CA_8th_reservoir_flow_monthly_mean.parquet
+    demand:
+      path: /people/sony061/works/godeeep/mosartwmpy/inputs/MOSART_CA_8th_reservoir_demand_monthly_mean.parquet

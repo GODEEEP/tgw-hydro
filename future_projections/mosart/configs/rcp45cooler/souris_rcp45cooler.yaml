@@ -1,0 +1,35 @@
+simulation:
+  name: souris_rcp45cooler
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+  output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 46.3125,-96.0625
+  - 46.4375,-95.9375
+  - 46.3125,-96.0625
+  - 46.3125,-96.0625
+  - 46.1875,-96.1875
+  - 48.1875,-96.1875
+  - 47.9375,-91.8125
+  - 48.5625,-93.4375
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp45cooler/09/mosart_rcp45cooler_huc09_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

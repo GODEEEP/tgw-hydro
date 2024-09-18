@@ -2,8 +2,11 @@ import os, datetime
 import mosartwmpy
 
 os.chdir('/vast/projects/godeeep/VIC/forcing/tgw-hydro/mosart')
-scenario = 'rcp85cooler'
-huc2_idx = 15
+#scenario = 'rcp45cooler'
+#scenario = 'rcp45hotter'
+#scenario = 'rcp85cooler'
+scenario = 'rcp85hotter'
+huc2_idx = 17
 huc2_names = [
     "northeast",
     "midatlantic",

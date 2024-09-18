@@ -6,8 +6,6 @@
 #SBATCH --account=GODEEEP
 #SBATCH --time=96:00:00
 #SBATCH --job-name=mosartwmpy
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=youngjun.son@pnnl.gov
 
 echo 'Loading modules'
 

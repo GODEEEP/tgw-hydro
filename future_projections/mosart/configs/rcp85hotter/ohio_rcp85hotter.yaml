@@ -1,0 +1,83 @@
+simulation:
+  name: ohio_rcp85hotter
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+  output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 41.1875,-79.4375
+  - 40.9375,-79.1875
+  - 40.9375,-79.4375
+  - 40.9375,-79.5625
+  - 40.8125,-79.5625
+  - 40.6875,-79.5625
+  - 40.4375,-79.3125
+  - 40.6875,-80.3125
+  - 40.6875,-80.3125
+  - 40.8561,-80.3091
+  - 41.8125,-79.0625
+  - 39.5625,-79.8125
+  - 39.4375,-79.4375
+  - 39.6875,-79.4375
+  - 39.8125,-80.8125
+  - 39.3125,-81.3125
+  - 39.1875,-81.6875
+  - 38.9375,-81.9375
+  - 39.5625,-81.8125
+  - 36.4375,-81.5625
+  - 36.6875,-81.0625
+  - 36.6875,-80.9375
+  - 36.8125,-80.9375
+  - 37.0625,-80.5625
+  - 36.9375,-80.4375
+  - 38.0625,-81.0625
+  - 38.1875,-80.9375
+  - 38.1875,-81.1875
+  - 38.1875,-81.3125
+  - 38.1875,-81.5625
+  - 38.4375,-81.8125
+  - 40.1875,-83.1875
+  - 37.1875,-82.4375
+  - 39.4375,-84.4375
+  - 38.5625,-82.8125
+  - 38.8125,-84.1875
+  - 38.8125,-84.9375
+  - 37.6875,-84.6875
+  - 37.8125,-84.6875
+  - 38.0625,-84.5625
+  - 36.9375,-84.1875
+  - 36.8125,-85.1875
+  - 38.3125,-85.6875
+  - 37.9375,-86.6875
+  - 37.7943,-87.0657
+  - 40.8125,-86.8125
+  - 40.6875,-86.8125
+  - 36.5625,-85.4375
+  - 36.3125,-85.9375
+  - 35.8125,-85.6875
+  - 36.0625,-85.8125
+  - 36.3125,-86.6875
+  - 36.0625,-86.5625
+  - 36.3125,-87.1875
+  - 37.0625,-88.1875
+  - 37.1875,-88.4375
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp85hotter/05/mosart_rcp85hotter_huc05_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

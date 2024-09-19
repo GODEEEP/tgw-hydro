@@ -1,0 +1,51 @@
+simulation:
+  name: lowercolorado_rcp45hotter
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+  output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 33.5625,-111.3125
+  - 33.5625,-111.4375
+  - 36.1706,-115.0431
+  - 36.1706,-115.0431
+  - 36.003,-115.091
+  - 34.5625,-111.1875
+  - 35.1875,-114.5625
+  - 36.0625,-114.6875
+  - 36.0625,-114.6875
+  - 34.3125,-114.1875
+  - 34.1875,-114.3125
+  - 33.6875,-111.1875
+  - 33.5625,-111.5625
+  - 33.4902,-111.9586
+  - 33.3623,-112.5387
+  - 32.9375,-114.3125
+  - 33.8125,-112.3125
+  - 36.742,-114.7426
+  - 34.2794,-111.2973
+  - 37.1875,-113.4375
+  - 37.1875,-113.8125
+  - 37.3125,-113.6875
+  - 37.1875,-113.1875
+  - 37.1875,-112.6875
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp45hotter/15/mosart_rcp45hotter_huc15_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

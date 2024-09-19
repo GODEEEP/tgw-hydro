@@ -1,0 +1,63 @@
+simulation:
+  name: arkansas_rcp85hotter
+  start_date: 2020-01-01
+  end_date: 2099-12-31
+  output_path: /vast/projects/godeeep/VIC/future_projections/mosart/runs
+grid:
+  path: ./input/domains/mosart_conus_nldas_grid.nc
+  subdomain:
+  - 36.4375,-93.8125
+  - 36.3125,-92.5625
+  - 35.4375,-91.8125
+  - 36.3125,-92.1875
+  - 36.5625,-93.3125
+  - 36.6875,-93.1875
+  - 35.8125,-91.6875
+  - 35.8125,-91.8125
+  - 35.6875,-91.8125
+  - 37.75,-97.35
+  - 36.1875,-96.3125
+  - 36.6875,-96.9375
+  - 35.9375,-95.3125
+  - 36.4375,-95.0625
+  - 36.1875,-95.1875
+  - 35.3125,-95.3125
+  - 35.3125,-94.8125
+  - 35.5625,-95.0625
+  - 35.5625,-95.1875
+  - 35.1875,-93.1875
+  - 35.4375,-93.8125
+  - 35.3125,-94.3125
+  - 35.0625,-92.8125
+  - 34.8125,-92.4375
+  - 33.8125,-96.5625
+  - 34.3121,-95.8741
+  - 34.1875,-94.6875
+  - 37.5209,-90.8348
+  - 36.2664,-95.1051
+  - 38.5625,-106.1875
+  - 38.5625,-106.1875
+  - 38.9375,-106.3125
+  - 38.8906,-104.9679
+  - 38.2206,-104.5142
+  - 38.2701,-104.7232
+  - 39.0942,-106.3523
+  unmask_output: false
+runoff:
+  read_from_file: true
+  path: /vast/projects/godeeep/VIC/future_projections/mosart/rcp85hotter/11/mosart_rcp85hotter_huc11_8th_runoff_{Y}_{M}.nc
+water_management:
+  enabled: true
+  demand:
+    read_from_file: true
+    path: ./input/demand/RCP8.5_GCAM_water_demand_2020_2099.nc
+  reservoirs:
+    enable_istarf: true
+    parameters:
+      path: ./input/reservoirs/reservoirs.nc
+    dependencies:
+      path: ./input/reservoirs/dependency_database.parquet
+    streamflow:
+      path: ./input/reservoirs/mean_monthly_reservoir_flow.parquet
+    demand:
+      path: ./input/reservoirs/mean_monthly_reservoir_demand.parquet

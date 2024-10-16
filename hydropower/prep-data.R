@@ -6,25 +6,26 @@ import::from(hydroGOF, KGE)
 options(
   readr.show_progress = FALSE,
   readr.show_col_types = FALSE,
-  pillar.width = 1e6
+  pillar.width = 1e6,
+  dplyr.summarise.inform = FALSE
 )
 
 output_dir <- "mosart-output"
 
-huc2s <- c(1:9, 11:18) # 1:18
+huc2s <- 1:18
 huc2_names <- c(
   "northeast", "midatlantic", "southatlantic", "greatlakes",
   "ohio", "tennessee", "uppermississippi", "lowermississippi",
   "souris",
-  # "missouri",
+  "missouri",
   "arkansas", "texas", "riogrande", "uppercolorado",
   "lowercolorado", "greatbasin", "columbia", "california"
 )
 
-huc2s <- c(10)
-huc2_names <- c(
-  "missouri"
-)
+# huc2s <- c(10)
+# huc2_names <- c(
+#   "missouri"
+# )
 
 scenarios <- c("historical", "rcp45cooler", "rcp45hotter", "rcp85cooler", "rcp85hotter")
 
@@ -35,6 +36,71 @@ read_dam_data <- function(fn, name) {
     mutate(eia_id = as.numeric(eia_id))
 }
 
+# replace the PNW dams with obs data
+pnw_obs <- read_csv("data/pnw_daily_data_with_libby.csv") |>
+  rename(eia_id = EIA_ID) |>
+  mutate(datetime = ymd(sprintf("%s-%s-%s", year, month, day)))
+
+# set up weekly time sequence
+sequence_weekly <- tibble(
+  date_time = seq(as.POSIXct("2001-01-01 00:00:00"),
+    as.POSIXct(sprintf(
+      "%s-12-31 23:00:00",
+      pnw_obs$datetime |> year() |> max()
+    )),
+    by = "hour"
+  )
+) |>
+  mutate(year = year(date_time)) %>%
+  split(.$year) |>
+  # .[[1]] -> x
+  map(
+    function(x) {
+      # stop()
+      x[["date_time"]][1] %>% year() -> yr
+
+      rep(1:53, each = 7) -> weekdef
+
+      x %>%
+        mutate(date = date(date_time)) %>%
+        select(-date_time) %>%
+        unique() %>%
+        mutate(jweek = weekdef[1:n()]) %>%
+        group_by(jweek) %>%
+        mutate(
+          n_hours = 24 * n(),
+          week_start = min(date)
+        ) |>
+        rename(datetime = date)
+    }
+  ) |>
+  bind_rows()
+
+pnw_weekly <- pnw_obs |>
+  filter(variable == "power_MW") |>
+  inner_join(sequence_weekly, by = join_by(year, datetime)) |>
+  group_by(eia_id, week_start) |>
+  summarise(
+    power_mw_obs = mean(value),
+    n_hours = n_hours[1]
+  ) |>
+  mutate(power_mwh_obs = power_mw_obs * n_hours) |>
+  ungroup() |>
+  select(-n_hours, -power_mw_obs) |>
+  rename(datetime = week_start)
+
+pnw_monthly <- pnw_obs |>
+  filter(variable == "power_MW") |>
+  group_by(eia_id, year, month) |>
+  summarise(power_mw_obs = mean(value)) |>
+  mutate(
+    datetime = ymd(sprintf("%s-%s-01", year, month)),
+    power_mwh_obs = power_mw_obs * days_in_month(datetime) * 24
+  ) |>
+  ungroup() |>
+  select(-power_mw_obs, -month, -year)
+
+# read the B1 data, monthly and weekly
 b1_monthly <- "data/B1_monthly/" |>
   list.files("*", full.names = T) |>
   map(read_csv) |>
@@ -47,7 +113,11 @@ b1_monthly <- "data/B1_monthly/" |>
   group_by(plant) |>
   # don't include plants with all zero gen
   filter(!length(unique(power_mwh)) == 1) |>
-  ungroup()
+  ungroup() |>
+  # replace the pnw data with obs
+  left_join(pnw_monthly, by = join_by(datetime, eia_id)) |>
+  mutate(power_mwh = ifelse(is.na(power_mwh_obs), power_mwh, power_mwh_obs)) |>
+  select(-power_mwh_obs)
 
 b1_weekly <- "data/B1_weekly/" |>
   list.files("*", full.names = T) |>
@@ -61,7 +131,11 @@ b1_weekly <- "data/B1_weekly/" |>
   group_by(plant) |>
   # don't include plants with all zero gen
   filter(!length(unique(power_mwh)) == 1) |>
-  ungroup()
+  ungroup() |>
+  # replace the pnw data with obs
+  left_join(pnw_weekly, by = join_by(datetime, eia_id)) |>
+  mutate(power_mwh = ifelse(is.na(power_mwh_obs), power_mwh, power_mwh_obs)) |>
+  select(-power_mwh_obs)
 
 for (i in 1:length(huc2s)) {
   for (scenario in scenarios) {
@@ -79,41 +153,6 @@ for (i in 1:length(huc2s)) {
     storage <- "%s/%s_%s/dam_storage.csv" |>
       sprintf(output_dir, huc2_name, scenario) |>
       read_dam_data("storage")
-
-    # set up weekly time sequence
-    sequence_weekly <- tibble(
-      date_time = seq(as.POSIXct("1981-01-01 00:00:00"),
-        as.POSIXct(sprintf(
-          "%s-12-31 23:00:00",
-          outflow$datetime |> year() |> max()
-        )),
-        by = "hour"
-      )
-    ) |>
-      mutate(year = year(date_time)) %>%
-      split(.$year) |>
-      # .[[1]] -> x
-      map(
-        function(x) {
-          # stop()
-          x[["date_time"]][1] %>% year() -> yr
-
-          rep(1:53, each = 7) -> weekdef
-
-          x %>%
-            mutate(date = date(date_time)) %>%
-            select(-date_time) %>%
-            unique() %>%
-            mutate(jweek = weekdef[1:n()]) %>%
-            group_by(jweek) %>%
-            mutate(
-              n_hours = 24 * n(),
-              week_start = min(date)
-            ) |>
-            rename(datetime = date)
-        }
-      ) |>
-      bind_rows()
 
     # build the complete dataset for weekly, include 12 lagged variables
     complete_data_weekly <- outflow |>

@@ -7,7 +7,8 @@ import::from(hydroGOF, KGE)
 options(
   readr.show_progress = FALSE,
   readr.show_col_types = FALSE,
-  pillar.width = 1e6
+  pillar.width = 1e6,
+  dplyr.summarise.inform = FALSE
 )
 
 output_dir <- "mosart-output"
@@ -106,7 +107,7 @@ for (i in 1:length(huc2s)) {
   #########################################################
   # Weekly
   #########################################################
-  power_weekly <- "%s/%s/cross_validation_data_weekly.csv" |>
+  power_weekly <- "%s/%s_historical/cross_validation_data_weekly.csv" |>
     sprintf(output_dir, huc2_name) |>
     read_csv()
 
@@ -119,7 +120,7 @@ for (i in 1:length(huc2s)) {
       `hydrofixr original` = KGE(power_mwh_pred_lm1, power_mwh),
       `hydrofixr updated` = KGE(power_mwh_pred_lm2, power_mwh)
       # `hydrofixr updated power transform` = KGE(power_mwh_pred_lm3, power_mwh),
-      `GLM` = KGE(power_mwh_pred_glm, power_mwh)
+      # `GLM` = KGE(power_mwh_pred_glm, power_mwh)
     ) |>
     pivot_longer(-plant, values_to = "kge")
 
@@ -129,7 +130,7 @@ for (i in 1:length(huc2s)) {
     huc2_name_plot = huc2_names_plot[huc2_name]
   )
 
-  kge_weekly |> write_csv(sprintf("%s/%s/cross_validation_stats_weekly.csv", output_dir, huc2_name))
+  kge_weekly |> write_csv(sprintf("%s/%s_historical/cross_validation_stats_weekly.csv", output_dir, huc2_name))
   # print(problems(kge_weekly))
 
   # compute ave for plot label

@@ -3,7 +3,8 @@ library(tidyverse)
 options(
   readr.show_progress = FALSE,
   readr.show_col_types = FALSE,
-  pillar.width = 1e6
+  pillar.width = 1e6,
+  dplyr.summarise.inform = FALSE
 )
 
 input_dir <- "mosart-output"
@@ -211,7 +212,8 @@ for (i in 1:length(huc2s)) {
 
     constraints_monthly |>
       mutate(across(where(is.numeric), \(x) round(x, 5))) |>
-      write_csv("%s%/%s/%02d_%s_monthly.csv" |> sprintf(output_dir_huc2, scenario, huc2, huc2_name))
+      mutate(huc2 = huc2, scenario = scenario) |>
+      write_csv("%s/%s/%02d_%s_monthly.csv" |> sprintf(output_dir_huc2, scenario, huc2, huc2_name))
 
 
     constraints_weekly <- power_weekly |>
@@ -220,8 +222,9 @@ for (i in 1:length(huc2s)) {
       left_join(weekly_params_pnw, by = join_by(eia_id)) |>
       pcm_constraints()
 
-    constraints_monthly |>
+    constraints_weekly |>
       mutate(across(where(is.numeric), \(x) round(x, 5))) |>
+      mutate(huc2 = huc2, scenario = scenario) |>
       write_csv("%s/%s/%02d_%s_weekly.csv" |> sprintf(output_dir_huc2, scenario, huc2, huc2_name))
   }
 }
@@ -238,8 +241,12 @@ for (scenario in scenarios) {
     bind_rows()
 
   # write the combined hydropower files
-  weekly |> write_csv("%s/%s_weekly.csv" |> sprintf(output_dir, scenario))
-  monthly |> write_csv("%s/%s_monthly.csv" |> sprintf(output_dir, scenario))
+  weekly |>
+    select(c(datetime, eia_id, plant, power_predicted_mwh, n_hours, p_avg, p_max, p_min, ador, scenario)) |>
+    write_csv("%s/%s_weekly.csv" |> sprintf(output_dir, scenario))
+  monthly |>
+    select(c(datetime, eia_id, plant, power_predicted_mwh, n_hours, p_avg, p_max, p_min, ador, scenario)) |>
+    write_csv("%s/%s_monthly.csv" |> sprintf(output_dir, scenario))
 
   # write the metadata files
   if (scenario == "historical") {
@@ -250,8 +257,9 @@ for (scenario in scenarios) {
     #   write_csv(sprintf("%s/godeeep_hydro_plants_weekly.csv", output_dir))
 
     monthly |>
-      select(-c(max_param, min_param, ador_param, p_avg, p_max, p_min, ador)) |>
+      select(-c(nameplate, p_avg, p_max, p_min, ador)) |>
       distinct(eia_id, .keep_all = TRUE) |>
-      write_csv(sprintf("%s/godeeep_hydro_plants_monthly.csv", output_dir))
+      select(-c(datetime, scenario, power_predicted_mwh, n_hours)) |>
+      write_csv(sprintf("%s/godeeep_hydro_plants.csv", output_dir))
   }
 }

@@ -1,6 +1,7 @@
 library(ncdf4)
 library(tidyverse)
 library(sf)
+library(rmapshaper)
 
 options(
   readr.show_progress = FALSE,
@@ -11,8 +12,12 @@ options(
 huc2_nums <- 1:18
 
 dam_shape <- st_read("../mosart/mosartwmpy_conus_EHA_v1.0/mosartwmpy_conus_EHA_v1.0_with_HUC2.shp")
-huc2_shape <- st_read("/Volumes/data/shapefiles/HUC2/HUC2.shp")
+huc2_shape <- st_read("/Volumes/data/shapefiles/HUC2/HUC2.shp") |>
+  as("Spatial") |>
+  ms_simplify(keep = .2) |>
+  st_as_sf()
 grid_conus <- read_csv("../data/grid_ids_conus.csv")
+
 
 full_grid_list <- full_grid_missing_list <- list()
 for (huc2_num in huc2_nums) {
@@ -60,10 +65,10 @@ for (huc2_num in huc2_nums) {
   grid_with_missing <- grid |>
     left_join(kge_valid_long, by = join_by(lon, lat)) |>
     rename(kge_valid = value) |>
-    mutate(kge_valid = ifelse(kge_valid < 0, 0, kge_valid)) |>
+    mutate(kge_valid = ifelse(kge_valid < -0.41, -0.41, kge_valid)) |>
     left_join(kge_calib_long, by = join_by(lon, lat)) |>
     rename(kge_calib = value) |>
-    mutate(kge_calib = ifelse(kge_calib < 0, 0, kge_calib))
+    mutate(kge_calib = ifelse(kge_calib < -0.41, -0.41, kge_calib))
   full_grid_list[[huc2_num]] <- grid_with_missing
 
   grid_missing <- grid |>
@@ -97,7 +102,7 @@ for (huc2_num in huc2_nums) {
       theme_bw() +
       theme(panel.grid = element_blank()) +
       # geom_point(aes(lon, lat), color = "orange", data = grid_missing) +
-      scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
+      scale_fill_viridis_c("KGE", option = "G", limits = c(-0.41, 1), breaks = c(1, 0.5, 0, -0.41)) +
       geom_sf(data = dam_sf, color = "black", pch = 21, fill = "white", size = 0.6) #+
     # geom_sf(data = huc2_boundary, fill = NA, size = 1, color='grey')
   }
@@ -112,8 +117,8 @@ full_grid <- bind_rows(full_grid_list)
 full_grid_missing <- bind_rows(full_grid_missing_list)
 p_kge_conus <- full_grid |>
   rename(
-    `Validation Period [2001-2019]` = kge_valid,
-    `Calibration Period [1980-2000]` = kge_calib
+    `Validation Period (2001-2019)` = kge_valid,
+    `Calibration Period (1980-2000)` = kge_calib
   ) |>
   na.omit() |>
   pivot_longer(-c(huc2, id, lon, lat), names_to = "kge") |>
@@ -122,7 +127,7 @@ p_kge_conus <- full_grid |>
   facet_wrap(~kge, ncol = 1) +
   theme_void() +
   theme(panel.grid = element_blank()) +
-  scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
+  scale_fill_viridis_c("KGE", option = "G", limits = c(-0.41, 1), breaks = c(1, 0.5, 0, -0.41)) +
   geom_sf(
     data = dam_shape |> filter(HUC2 %in% huc2_nums),
     color = "white", pch = 21, fill = "white", alpha = 0,
@@ -149,12 +154,12 @@ p_kge_conus_calib_only <- full_grid |>
   geom_raster(aes(lon, lat, fill = value)) +
   theme_void() +
   theme(panel.grid = element_blank(), legend.position = "inside", legend.position.inside = c(.9, .25)) +
-  scale_fill_viridis_c("KGE", option = "G", limits = c(0, 1)) +
+  scale_fill_viridis_c("KGE", option = "G", limits = c(-0.41, 1), breaks = c(1, 0.5, 0, -0.41)) +
   geom_sf(data = dam_shape |> filter(HUC2 %in% huc2_nums), alpha = 0)
 p_kge_conus_calib_only
 ggsave("plots/kge_conus_calib.png", p_kge_conus_calib_only, width = 8, height = 6, dpi = 300)
 
-power_monthly <- read_csv("../mosart/godeeep-hydro/historical/godeeep-hydro-monthly.csv")
+power_monthly <- read_csv("../hydropower/godeeep_hydro/historical_monthly.csv")
 p_power_constraints <- power_monthly |>
   filter(datetime == as.Date("2018-07-01")) |>
   pivot_longer(c(p_avg, p_max, p_min), names_to = "constraint") |>

@@ -11,3 +11,18 @@ Scripts for producing hydropower generation data using the [TGW meteorology](htt
 5. Follow the instructions in `calibration/README.md` to conduct calibrations, note this is very computationally expensive and will likely require a HPC setup
 6. Follow the instructions in `mosart/README.md` to conduct the mosart simulations
 7. Follow the instructions in `hydropower/README.md` to develop hydropower estimates 
+
+
+## Funding
+
+This research was supported by the Grid Operations, Decarbonization, Environmental and Energy Equity Platform (GODEEEP) Investment, under the Laboratory Directed Research and Development (LDRD) Program at Pacific Northwest National Laboratory (PNNL).
+
+PNNL is a multi-program national laboratory operated for the U.S. Department of Energy (DOE) by Battelle Memorial Institute under Contract No. DE-AC05-76RL01830.
+
+## Authors
+
+Cameron Bracken, Youngjun Son, Dan Broman, Nathalie Voisin
+
+## Corresponding author
+
+Cameron Bracken, cameron.bracken@pnnl.gov

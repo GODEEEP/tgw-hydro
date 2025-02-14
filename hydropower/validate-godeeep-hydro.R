@@ -6,14 +6,14 @@ options(
   dplyr.summarise.inform = FALSE
 )
 
-input_dir <- "godeeep_hydro/"
+input_dir <- "godeeep-hydro/"
 scenarios <- c("historical", "rcp45cooler", "rcp45hotter", "rcp85cooler", "rcp85hotter")
 
-hydro_plants <- read_csv("godeeep_hydro/godeeep_hydro_plants.csv")
+hydro_plants <- read_csv("godeeep-hydro/godeeep-hydro-plants.csv")
 
 weekly <- scenarios |>
   map(function(scenario) {
-    "%s/%s_weekly.csv" |>
+    "%s/godeeep-hydro-%s-weekly.csv" |>
       sprintf(input_dir, scenario) |>
       read_csv() #|>
     # mutate(scenario = scenario)
@@ -23,7 +23,7 @@ weekly <- scenarios |>
 
 monthly <- scenarios |>
   map(function(scenario) {
-    "%s/%s_monthly.csv" |>
+    "%s/godeeep-hydro-%s-monthly.csv" |>
       sprintf(input_dir, scenario) |>
       read_csv() #|>
     # mutate(scenario = scenario)

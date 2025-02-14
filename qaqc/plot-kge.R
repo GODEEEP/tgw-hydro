@@ -2,6 +2,7 @@ library(ncdf4)
 library(tidyverse)
 library(sf)
 library(rmapshaper)
+library(patchwork)
 
 options(
   readr.show_progress = FALSE,
@@ -159,8 +160,10 @@ p_kge_conus_calib_only <- full_grid |>
 p_kge_conus_calib_only
 ggsave("plots/kge_conus_calib.png", p_kge_conus_calib_only, width = 8, height = 6, dpi = 300)
 
-power_monthly <- read_csv("../hydropower/godeeep_hydro/historical_monthly.csv")
+power_monthly <- read_csv("../hydropower/godeeep-hydro/godeeep-hydro-historical-monthly.csv")
+metadata = read_csv('../hydropower/godeeep-hydro/godeeep-hydro-plants.csv')
 p_power_constraints <- power_monthly |>
+  left_join(metadata, by='eia_id') |> 
   filter(datetime == as.Date("2018-07-01")) |>
   pivot_longer(c(p_avg, p_max, p_min), names_to = "constraint") |>
   mutate(

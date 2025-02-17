@@ -16,7 +16,7 @@ output_dir <- "mosart-output"
 
 metadata <- read_csv("godeeep-hydro/godeeep-hydro-plants.csv")
 
-kge_vic_huc2 = read_csv('../qaqc/kge_ave_huc2.csv')
+kge_vic_huc2 <- read_csv("../qaqc/kge_ave_huc2.csv")
 
 huc2_shape <- st_read("/Volumes/data/shapefiles/HUC2/HUC2.shp") |>
   as("Spatial") |>
@@ -171,9 +171,18 @@ for (i in 1:length(huc2s)) {
 kge_conus <- bind_rows(
   bind_rows(kge_monthly_conus_list) |> mutate(dataset = "monthly"),
   bind_rows(kge_weekly_conus_list) |> mutate(dataset = "weekly")
-)|> left_join(metadata, by=join_by(eia_id, plant, huc2))
+) |> left_join(metadata, by = join_by(eia_id, plant, huc2))
 
-kge_conus |> group_by(huc2, dataset) |> summarise(kge=mean(kge)) |> left_join(kge_vic_huc2 |> mutate(huc2=as.numeric(huc2)), by='huc2') |> ggplot()+geom_point(aes(x=kge_calib, y=kge))+ facet_wrap(~dataset)+geom_smooth(method='lm')
+# plot average KGE VIC for the HUC2 vs average kge of hydropower plants in HUC2
+kge_conus |>
+  group_by(huc2, dataset) |>
+  summarise(kge = mean(kge)) |>
+  left_join(kge_vic_huc2 |> mutate(huc2 = as.numeric(huc2)), by = "huc2") |>
+  ggplot(aes(x = kge_calib, y = kge)) +
+  geom_point() +
+  facet_wrap(~dataset) +
+  geom_smooth(method = "lm")
+
 
 #
 ave_kge_conus <- kge_conus |>
@@ -228,7 +237,7 @@ p_kge_map <- kge_conus |>
   theme_void() +
   facet_wrap(~dataset, nrow = 1) +
   # scale_size_continuous("KGE", range = c(.3, 2), breaks = seq(-0.5, 1.01, by = .25)) +
-  scale_fill_viridis_c("KGE", option = "G", breaks = seq(0, 1, by = .1), limits=c(0,1)) +
+  scale_fill_viridis_c("KGE", option = "G", breaks = seq(0, 1, by = .1), limits = c(0, 1)) +
   guides(fill = guide_legend()) + # , size = guide_legend()) #+
   # theme(legend.position = "inside", legend.position.inside = c(.88, .35)) #+
   theme(

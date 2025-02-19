@@ -1,6 +1,6 @@
 # forcings 
 
-This directory contains scripts to process the TGW (https://tgw-data.msdlive.org/) forcings for the VIC model. Please refer to indivdual code files for details. 
+This directory contains scripts to process the TGW (https://tgw-data.msdlive.org/) forcings for the VIC model. Please refer to individual code files for details. 
 
 ## Steps to reproduce
 1. Download the TGW data (https://tgw-data.msdlive.org/). Warning: this data is very large and will require an HPC system to process.

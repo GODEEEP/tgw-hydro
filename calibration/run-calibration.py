@@ -30,12 +30,12 @@ path_forcings = '/rcfs/projects/cched/TGW-WRF/{HUC}/historic_1992_2004/wrfout_TG
 path_runoff = '/rcfs/projects/cched/VIC/runoff_GRFR/runoff_conus_16th_deg_{}.nc'
 
 # the period to use for calibration, first 2 years are spin up time
-calib_start_year = 1979
+calib_start_year = 1995
 calib_end_year = 2000
 
 # after the calibration, we do a full run of the entire period
-full_run_start_year = 1979
-full_run_end_year = 2019
+full_run_start_year = 1995
+full_run_end_year = 2004
 
 
 def run_calibration(path_csv, path_output, point_id):

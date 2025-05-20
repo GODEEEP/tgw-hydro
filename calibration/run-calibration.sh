@@ -3,7 +3,7 @@
 huc2=6
 
 csv_in=/rcfs/projects/cched/VIC/domain/grid_ids_conus.csv
-path_out=/rcfs/projects/cched/VIC/calibration/ClimRR-CCSM/$(printf "%02d" $huc2)
+path_out=/rcfs/projects/cched/VIC/calibration/TGW-WRF/$(printf "%02d" $huc2)
 
 # huc2      n first_id last_id
 # 01     5755        1    5755

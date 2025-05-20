@@ -27,7 +27,6 @@ year=${years[worker_index]}
 
 echo "Worker $SLURM_PROCID is processing year: $year"
 
-yearfile="/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical_year_files/tgw_forcing_d01_00625vic_${year}.nc"
 yearfile="/rcfs/projects/cched/TGW-WRF/historic_1980_2019/tgw_wrf_historic_${year}_00625vic.nc"
 
 if [ ! -f "$yearfile" ]; then

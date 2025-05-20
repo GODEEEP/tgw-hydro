@@ -108,10 +108,10 @@ def compute_obj(input_dir, begin_date, end_date):
   # only compare for the date range of interest
   runoff_vic = runoff_vic.where(
       runoff_vic['time'] >= begin_date, drop=True).where(
-      runoff_vic['time'] < end_date, drop=True)
+      runoff_vic['time'] <= end_date, drop=True)
   runoff_obs = runoff_obs.where(
       runoff_obs['time'] >= begin_date, drop=True).where(
-      runoff_obs['time'] < end_date, drop=True)
+      runoff_obs['time'] <= end_date, drop=True)
 
   # compare the monthly mean statistics
   runoff_vic = runoff_vic.resample(time='M').mean()
@@ -128,7 +128,7 @@ def compute_obj(input_dir, begin_date, end_date):
 def write_output(obj):
   f = open('vic.out', 'w')
   # ostrich bugs out if there is only one value on a line
-  f.write('NSE '+str(obj)+' '+str(obj)+'\n')
+  f.write('KGE '+str(obj)+' '+str(obj)+'\n')
   f.close()
 
 
@@ -142,5 +142,5 @@ if __name__ == '__main__':
   updated_params = read_params()
   modify_params(updated_params)
   run_vic()
-  obj = compute_obj('input_symln', pd.Timestamp('1981-01-01'), pd.Timestamp('2000-12-31'))
+  obj = compute_obj('input', pd.Timestamp('1981-01-01'), pd.Timestamp('2000-12-31'))
   write_output(obj)

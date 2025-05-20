@@ -9,6 +9,7 @@ see associated sh and sl scripts
 
 modified by Cameron Bracken 9 Aug 2023 to process the full period 1979-2022
 modified by Cameron Bracken 27 Oct 2023 to extend the grid to include as much of canada as possible
+modified by Youngjun Son for CCHED to process in 6-hour time step
 """
 
 import xarray as xr
@@ -21,19 +22,19 @@ import glob
 import os
 import sys
 
-yearstart = 1979
-yearend = 2022
-filesubinit = '1979-01-01'
+yearstart = 1980
+yearend = 2019
+filesubinit = '1980-01-01'
 
 
 def method(i: int = 1):
 
   # set dir for source wrf data
-  wrf_dir = '/rcfs/projects/godeeep/shared_data/tgw_wrf/tgw_wrf_historic/hourly/'
+  wrf_dir = '/rcfs/projects/cched/TGW-WRF/raw/historic_1980_2019/'
 
   # set dir for processed data
   # out_dir = '/qfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/'
-  out_dir = '/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical/'
+  out_dir = '/rcfs/projects/cched/TGW-WRF/historic_1980_2019/'
 
   # set label to append to output files
   file_label = '00625vic'
@@ -208,7 +209,11 @@ def method(i: int = 1):
 
     # write out data
     file_out = out_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
-    wrf_data_out.to_netcdf(path=file_out)
+    #wrf_data_out.to_netcdf(path=file_out)
+    
+    wrf_data_out_6h = wrf_data_out.resample(time = '6H').mean()
+    wrf_data_out_6h['PRECIP'] = wrf_data_out['PRECIP'].resample(time = '6H').sum(skipna = False)
+    wrf_data_out_6h.to_netcdf(path=file_out.replace('hourly', '6hourly'))
 
     # subset
     if subset_flag:

@@ -1,18 +1,18 @@
-import xesmf as xe
-import xarray as xr
 import os
 # loading the xesmf package will throw an error if this path is not set
-# os.environ['ESMFMKFILE'] = '/Users/brac840/miniforge3/envs/vic/lib/esmf.mk'
+os.environ['ESMFMKFILE'] = '/people/sony061/.conda/envs/xesmf_env/lib/esmf.mk'
+import xesmf as xe
+import xarray as xr
 
-runoff_data_dir = '/Volumes/data/tgw-hydro/GRFR_runoff/global'
-subset_output_dir = '/Volumes/data/tgw-hydro/GRFR_runoff/conus'
-years = list(range(1979, 1999+1))
+runoff_data_dir = '/rcfs/projects/cched/VIC/runoff_GRFR'
+subset_output_dir = '/rcfs/projects/cched/VIC/runoff_GRFR'
+years = list(range(1995, 2004+1))
 
 # domain including conus and most of canada
 lon_slice = slice(-140, -55)
 lat_slice = slice(20, 70)
 
-na = xr.open_dataset('/Volumes/data/tgw-hydro/params/namerica_params.nc')
+na = xr.open_dataset('/rcfs/projects/cched/VIC/domain/namerica_params.nc')
 na_subset = na.sel(lon=lon_slice, lat=lat_slice)
 
 for year in years:

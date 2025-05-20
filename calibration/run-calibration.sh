@@ -1,9 +1,9 @@
 #!/usr/bin/env /bin/bash
 
-huc2=9
+huc2=6
 
-csv_in=../data/grid_ids_conus.csv
-path_out=/vast/projects/godeeep/VIC/calibration/$(printf "%02d" $huc2)
+csv_in=/rcfs/projects/cched/VIC/domain/grid_ids_conus.csv
+path_out=/rcfs/projects/cched/VIC/calibration/ClimRR-CCSM/$(printf "%02d" $huc2)
 
 # huc2      n first_id last_id
 # 01     5755        1    5755
@@ -52,4 +52,4 @@ echo "HUC2 $huc2 NODE $SLURM_NODEID: points $start_id - $end_id"
 
 export OMP_NUM_THREADS=1
 
-/rcfs/projects/im3/gnuparallel/bin/parallel --jobs 63 "python run-calibration.py $csv_in $path_out " ::: "${points[@]}"
+~/bin/parallel --jobs 64 "python run-calibration.py $csv_in $path_out " ::: "${points[@]}"

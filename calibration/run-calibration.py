@@ -22,7 +22,12 @@ plim_ctr = [
     [8, 30],  # expt3: [8, 30], ['-20%', '20%']
 ]
 
-vic_input_dir = '/vast/projects/godeeep/VIC/inputs_1_16_deg_by_huc2'
+path_run = '/rcfs/projects/cched/VIC/calibration/TGW-WRF'
+path_domain = '/rcfs/projects/cched/VIC/domain/subset/namerica_domain_HUC{HUC}.nc'
+path_params = '/rcfs/projects/cched/VIC/domain/subset/namerica_params_HUC{HUC}.nc'
+path_state = '/rcfs/projects/cched/VIC/spinup/TGW-WRF/{HUC}/vic_state_HUC{HUC}.20010101_00000.nc'
+path_forcings = '/rcfs/projects/cched/TGW-WRF/{HUC}/historic_1992_2004/wrfout_TGW-WRF_{HUC}_00625vic_{y}.nc'
+path_runoff = '/rcfs/projects/cched/VIC/runoff_GRFR/runoff_conus_16th_deg_{}.nc'
 
 # the period to use for calibration, first 2 years are spin up time
 calib_start_year = 1979
@@ -49,11 +54,9 @@ def run_calibration(path_csv, path_output, point_id):
   lat = row.lat.values[0]
   huc2_code = row.huc2.values[0]
 
-  # create an output folder and symlink to the input folder
+  # create input and output folders
   id_ll = f'{point_id:07}_{lon:0.5f}_{lat:0.5f}'
   point_subdir = f'{huc2_code:02}/{id_ll}'
-  input_path = f'{vic_input_dir}/{point_subdir}'
-
   final_subpath_output = f'{final_path_output}/{id_ll}'
   subpath_output = f'{path_output}/{id_ll}'
 
@@ -68,38 +71,17 @@ def run_calibration(path_csv, path_output, point_id):
         return None
 
   os.makedirs(subpath_output, exist_ok=True)
-  if not os.path.islink(f'{subpath_output}/input_symln'):
-    # copy the forcing data to memory for speed
-    os.system(f"cp -r {input_path} {subpath_output}/input_symln")
-    # os.symlink(input_path, f'{subpath_output}/input_symln')
 
-  # aggregate forcing files into 6 hours and save in the same input folder, "forcings_6h_16thdeg_*.nc"
-  # concatenate runoff files into one single file not to repeat during calibrations
-  # (potentially to increase efficiency), "runoff_concat_16thdeg_*.nc"
-  def update_forcing_runoff(input_path):
-    files_forcing = glob.glob(f'{input_path}/forcings_16thdeg_{id_ll}_*.nc')
-    files_forcing.sort()
-    for f in files_forcing:
-      # if not os.path.isfile(f.replace('forcings_16thdeg', 'forcings_6h_16thdeg')):
-      print('Creating 6h forcing:', f.replace('forcings_16thdeg', 'forcings_6h_16thdeg'))
-      ds = xr.load_dataset(f, decode_coords='all')
-      ds_6h = ds[['T2', 'PSFC', 'SWDOWN', 'GLW', 'VP', 'WSPEED']].resample(time='6H').mean()
-      ds_6h['PRECIP'] = ds['PRECIP'].resample(time='6H').sum()
-      ds_6h.to_netcdf(f.replace('forcings_16thdeg', 'forcings_6h_16thdeg'))
-      ds.close()
-      ds_6h.close()
+  # copy the input data to memory for speed
+  os.makedirs(f'{subpath_output}/input', exist_ok=True)
+  _ = xr.open_dataset(path_domain.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/domain_{id_ll}.nc')
+  _ = xr.open_dataset(path_params.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/params_{id_ll}.nc')
+  _ = xr.open_dataset(path_state.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/vic_state_{id_ll}.nc')
+  for y in range(full_run_start_year, full_run_end_year + 1):
+    _ = xr.open_dataset(path_forcings.format(HUC =  f'{huc2_code:02d}', y = y)).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/forcings_6h_16thdeg_{id_ll}_{y}.nc')
+  _ = xr.open_mfdataset(path_runoff.format('*')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/runoff_concat_16thdeg_{id_ll}.nc')
 
-    files_runoff = glob.glob(f'{input_path}/runoff_16thdeg_{id_ll}_*.nc')
-    files_runoff.sort()
-    filename_runoff = f'/runoff_concat_16thdeg_{id_ll}_' + \
-                      f'{files_runoff[0].split("_")[-1][:4]}-{files_runoff[-1].split("_")[-1][:4]}.nc'
-    if not os.path.isfile(f'{input_path}/{filename_runoff}'):
-      ds = xr.open_mfdataset(files_runoff, concat_dim='time', combine='nested', decode_coords='all')
-      ds = ds.load()
-      ds.to_netcdf(f'{input_path}/{filename_runoff}')
-      ds.close()
 
-  update_forcing_runoff(f'{subpath_output}/input_symln')
 
   print('Preparing calibration')
   # copy model and calibration files
@@ -108,8 +90,8 @@ def run_calibration(path_csv, path_output, point_id):
   shutil.copy('vic_image.exe', subpath_output)  # vic_image
   shutil.copy('run_vic.py', subpath_output)
   # shutil.copy('config.txt', subpath_output)
-  shutil.copy(f'{subpath_output}/input_symln/params_{id_ll}.nc', f'{subpath_output}/params_updated.nc')
-  shutil.copy(f'{subpath_output}/input_symln/params_{id_ll}.nc', f'{subpath_output}/params.nc')
+  shutil.copy(f'{subpath_output}/input/params_{id_ll}.nc', f'{subpath_output}/params_updated.nc')
+  shutil.copy(f'{subpath_output}/input/params_{id_ll}.nc', f'{subpath_output}/params.nc')
   # shutil.copy('ostIn.txt', subpath_output) # "ostIn.txt" will have the initial values from VICGlobal
   shutil.copy('Ostrich', subpath_output)
 
@@ -174,14 +156,14 @@ EndParams
 
 BeginResponseVars
 # name  filename  ; keyword   skip_lines  col token
-   NSE  vic.out   ; NSE                0    2   ' ' 
+   KGE  vic.out   ; KGE                0    2   ' ' 
 EndResponseVars
 
 BeginConstraints
 EndConstraints
 
 BeginGCOP
-CostFunction NSE
+CostFunction KGE
 PenaltyFunction APM
 EndGCOP
 
@@ -219,7 +201,7 @@ FROZEN_SOIL           FALSE # calculate frozen soils
 # ######################################################################
 # DOMAIN INFO
 # ######################################################################
-DOMAIN input_symln/domain_{id_ll}.nc
+DOMAIN input/domain_{id_ll}.nc
 DOMAIN_TYPE    LAT     lat
 DOMAIN_TYPE    LON     lon
 DOMAIN_TYPE    MASK    mask
@@ -228,11 +210,22 @@ DOMAIN_TYPE    FRAC    frac
 DOMAIN_TYPE    YDIM    lat
 DOMAIN_TYPE    XDIM    lon
 
+#######################################################################
+# State Files and Parameters
+#######################################################################
+#INIT_STATE input/vic_state_{id_ll}.nc
+#STATENAME  vic_state_{id_ll}
+#STATEYEAR  2001
+#STATEMONTH 1
+#STATEDAY   1
+#STATESEC   0
+#STATE_FORMAT NETCDF4
+
 # ######################################################################
 # Forcing Files and Parameters
 # netcdf forcing files will be of the form: <FORCING1>YYYY.nc
 # ######################################################################
-FORCING1      input_symln/forcings_6h_16thdeg_{id_ll}_
+FORCING1      input/forcings_6h_16thdeg_{id_ll}_
 FORCE_TYPE    AIR_TEMP     T2      # Average air temperature, C
 FORCE_TYPE    PREC         PRECIP  # Total precipitation (rain and snow), kg/m2/s
 FORCE_TYPE    PRESSURE     PSFC    # Atmospheric pressure, Pa
@@ -263,8 +256,6 @@ AGGFREQ     NDAYS   1  # Write output every 1 day
 OUT_FORMAT  NETCDF4
 OUTVAR      OUT_RUNOFF
 OUTVAR      OUT_BASEFLOW
-OUTVAR      OUT_EVAP
-OUTVAR      OUT_SWE
 '''
 
   # this is a hack to pass the input data directory to the model
@@ -283,6 +274,8 @@ OUTVAR      OUT_SWE
     f.write(ostIn_txt)
   with open('config.txt', 'w') as f:
     f.write(vic_config.format(start_year=calib_start_year, end_year=calib_end_year, id_ll=id_ll))
+  with open('config_final.txt', 'w') as f:
+    f.write(vic_config.format(start_year=full_run_start_year, end_year=full_run_end_year, id_ll=id_ll))
 
   # print('Running uncalibrated')
   # run the uncalibrated case
@@ -290,13 +283,14 @@ OUTVAR      OUT_SWE
     shutil.rmtree('nocalib')
   os.makedirs('nocalib', exist_ok=True)
 
+  # run VIC with the production configuration before calibration
   subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # return None
 
   # copy output files
   # some grid cells are in the ocean and the runs may fail
-  vic_runoff = 'vic_runoff.1979-01-01.nc'
+  vic_runoff = 'vic_runoff.{}-01-01.nc'.format(full_run_start_year)
   if os.path.exists(vic_runoff):
     shutil.move(vic_runoff, f'nocalib/{vic_runoff}')
     shutil.copy('params.nc', './nocalib/params_updated.nc')
@@ -312,13 +306,11 @@ OUTVAR      OUT_SWE
   subprocess.run(['time', './Ostrich', '>', '/dev/null'])
 
   # Do a full period run with the final parameters
-  with open('config.txt', 'w') as f:
-    f.write(vic_config.format(start_year=full_run_start_year, end_year=full_run_end_year, id_ll=id_ll))
-
   # make sure the param file is updated
   params = read_params()
   modify_params(params)
 
+  # run VIC with the production configuration after calibration
   subprocess.run(['./vic_image.exe', '-g', 'config.txt'], env={'OMP_NUM_THREADS': '1', **os.environ})  # vic_image
 
   # remove binaries to save space
@@ -328,14 +320,12 @@ OUTVAR      OUT_SWE
 
   # create the final output dir
   # copy the whole output directory to the hard disk
+
   os.makedirs(final_subpath_output, exist_ok=True)
   print(f"copying from {subpath_output} to {final_path_output}")
   # os.system(f"cp -r {subpath_output} {final_path_output}")
   # copy the output directory to its final location, but exclude the forcing data
-  os.system(f'rsync -av --progress {subpath_output} {final_path_output} --exclude input_symln')
-  print(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
-  os.system(f'ln -s {input_path} {final_path_output}/{id_ll}/input_symln')
-  # os.symlink(input_path, f'{final_path_output}/input_symln')
+  os.system(f'rsync -av --progress {subpath_output} {final_path_output} --exclude input')
 
   # remove the temporary directory
   os.system(f'rm -rf {subpath_output}')

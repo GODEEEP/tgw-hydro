@@ -4,8 +4,8 @@
 # combine them into one file per year, needs to be run as a slurm 
 # job to run in parallel
 
-start_year=1979
-end_year=2022
+start_year=1980
+end_year=2019
 years=()
 
 for ((year = start_year; year <= end_year; year++))
@@ -28,10 +28,11 @@ year=${years[worker_index]}
 echo "Worker $SLURM_PROCID is processing year: $year"
 
 yearfile="/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical_year_files/tgw_forcing_d01_00625vic_${year}.nc"
+yearfile="/rcfs/projects/cched/TGW-WRF/historic_1980_2019/tgw_wrf_historic_${year}_00625vic.nc"
 
 if [ ! -f "$yearfile" ]; then
   echo "Processing year $year: $yearfile"
-  cdo -w cat "/vast/projects/godeeep/VIC/forcing/conus_tgw_1_16_deg_historical/tgw_wrf_historic_hourly_${year}*.nc" "$yearfile"
+  cdo -w cat "/rcfs/projects/cched/TGW-WRF/historic_1980_2019/tgw_wrf_historic_6hourly_${year}-*_00625vic.nc" "$yearfile"
   echo "Year $year processing complete"
 else
   echo "Year $year: $yearfile already exists. Skipping."

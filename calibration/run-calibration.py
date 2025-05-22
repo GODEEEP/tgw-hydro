@@ -22,20 +22,19 @@ plim_ctr = [
     [8, 30],  # expt3: [8, 30], ['-20%', '20%']
 ]
 
-path_run = '/rcfs/projects/cched/VIC/calibration/TGW-WRF'
-path_domain = '/rcfs/projects/cched/VIC/domain/subset/namerica_domain_HUC{HUC}.nc'
-path_params = '/rcfs/projects/cched/VIC/domain/subset/namerica_params_HUC{HUC}.nc'
-path_state = '/rcfs/projects/cched/VIC/spinup/TGW-WRF/{HUC}/vic_state_HUC{HUC}.20010101_00000.nc'
-path_forcings = '/rcfs/projects/cched/TGW-WRF/{HUC}/historic_1992_2004/wrfout_TGW-WRF_{HUC}_00625vic_{y}.nc'
-path_runoff = '/rcfs/projects/cched/VIC/runoff_GRFR/runoff_conus_16th_deg_{}.nc'
+path_domain = '/people/sony061/tmp/foresight/domain/subset/namerica_domain_HUC{HUC}.nc' # VIC Domain for HUC
+path_params = '/people/sony061/tmp/foresight/domain/subset/namerica_params_HUC{HUC}.nc' # VIC Parameter for HUC
+path_state = '' # VIC State for HUC
+path_forcings = '/people/sony061/tmp/foresight/forcings/{HUC}/tgw_wrf_historic_{HUC}_00625vic_{y}.nc' # VIC Forcing for HUC
+path_runoff = '/people/sony061/tmp/foresight/runoff/runoff_conus_16th_deg_{}.nc' # Target Runoff
 
 # the period to use for calibration, first 2 years are spin up time
-calib_start_year = 1995
-calib_end_year = 2000
+calib_start_year = 1992
+calib_end_year = 1992
 
 # after the calibration, we do a full run of the entire period
-full_run_start_year = 1995
-full_run_end_year = 2004
+full_run_start_year = 1992
+full_run_end_year = 1992
 
 
 def run_calibration(path_csv, path_output, point_id):
@@ -76,7 +75,7 @@ def run_calibration(path_csv, path_output, point_id):
   os.makedirs(f'{subpath_output}/input', exist_ok=True)
   _ = xr.open_dataset(path_domain.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/domain_{id_ll}.nc')
   _ = xr.open_dataset(path_params.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/params_{id_ll}.nc')
-  _ = xr.open_dataset(path_state.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/vic_state_{id_ll}.nc')
+#  _ = xr.open_dataset(path_state.format(HUC = f'{huc2_code:02d}')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/vic_state_{id_ll}.nc')
   for y in range(full_run_start_year, full_run_end_year + 1):
     _ = xr.open_dataset(path_forcings.format(HUC =  f'{huc2_code:02d}', y = y)).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/forcings_6h_16thdeg_{id_ll}_{y}.nc')
   _ = xr.open_mfdataset(path_runoff.format('*')).sel(lat = slice(lat, lat), lon = slice(lon, lon)).to_netcdf(f'{subpath_output}/input/runoff_concat_16thdeg_{id_ll}.nc')
@@ -325,7 +324,7 @@ OUTVAR      OUT_BASEFLOW
   print(f"copying from {subpath_output} to {final_path_output}")
   # os.system(f"cp -r {subpath_output} {final_path_output}")
   # copy the output directory to its final location, but exclude the forcing data
-  os.system(f'rsync -av --progress {subpath_output} {final_path_output} --exclude input')
+  os.system(f'rsync -av {subpath_output} {final_path_output} --exclude input')
 
   # remove the temporary directory
   os.system(f'rm -rf {subpath_output}')

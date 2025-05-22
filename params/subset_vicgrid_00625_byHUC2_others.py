@@ -7,11 +7,11 @@ import xarray as xr
 
 xr.set_options(keep_attrs = True)
 
-path_csv = '/rcfs/projects/cched/VIC/domain/grid_ids_conus.csv'
-path_nc = '/rcfs/projects/cched/VIC/domain/namerica_domain.nc'
-path_out = '/rcfs/projects/cched/VIC/domain/subset/namerica_domain_HUC{HUC2:02d}.nc'
-#path_nc = '/rcfs/projects/cched/VIC/domain/namerica_params.nc'
-#path_out = '/rcfs/projects/cched/VIC/domain/subset/namerica_params_HUC{HUC2:02d}.nc'
+path_csv = '/people/sony061/tmp/foresight/domain/grid_ids_conus.csv'
+path_nc = '/people/sony061/tmp/foresight/domain/namerica_domain.nc'
+path_out = '/people/sony061/tmp/foresight/domain/subset/namerica_domain_HUC{HUC2:02d}.nc'
+#path_nc = '/people/sony061/tmp/foresight/domain/namerica_params.nc'
+#path_out = '/people/sony061/tmp/foresight/domain/subset/namerica_params_HUC{HUC2:02d}.nc'
 
 flag_mask = True # if True, mask variables outside of HUC boundary, WARNINIG: Time-Consuming
 vars_mask = {'mask': 0} # if empty, iterate all variables in path_nc
@@ -21,7 +21,7 @@ def subset(year = None):
     df = pd.read_csv(path_csv)
     list_huc2 = df['huc2'].unique()
 
-    ds = xr.open_dataset(path_nc.format(year = year), decode_cf = 'all')
+    ds = xr.open_dataset(path_nc, decode_cf = 'all')
     # VIC: ../shared_all/src/calc_root_fraction.c:60: errno: None: Input root fractions do not sum to 1.0: 0.990000, veg class: 5
     if 'root_fract' in ds.data_vars: ds['root_fract'] = ds['root_fract'] / ds['root_fract'].sum(dim = 'root_zone')
     for huc2 in list_huc2:

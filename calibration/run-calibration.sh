@@ -2,8 +2,8 @@
 
 huc2=6
 
-csv_in=/rcfs/projects/cched/VIC/domain/grid_ids_conus.csv
-path_out=/rcfs/projects/cched/VIC/calibration/TGW-WRF/$(printf "%02d" $huc2)
+csv_in=/people/sony061/tmp/foresight/domain/grid_ids_conus.csv
+path_out=/people/sony061/tmp/foresight/calibration/TGW-WRF/$(printf "%02d" $huc2)
 
 # huc2      n first_id last_id
 # 01     5755        1    5755
@@ -39,10 +39,12 @@ total_points=${total_points_array[$index]}
 # total number of nodes used to run this job, defined in run-calibration.sl
 total_nodes=$SLURM_JOB_NUM_NODES
 
-start_id=$((SLURM_NODEID*total_points/total_nodes+first_id))
-end_id=$((SLURM_NODEID*total_points/total_nodes+total_points/total_nodes-1+first_id))
+n_points=$((total_points/total_nodes))
+start_id=$((SLURM_NODEID*n_points+first_id))
+end_id=$((SLURM_NODEID*n_points+n_points-1+first_id))
 
-if (( end_id >= total_points+first_id-1 )); then
+#if (( end_id >= total_points+first_id-1 )); then
+if (( SLURM_NODEID == total_nodes-1 )); then
   end_id=$((first_id+total_points-1))
 fi
 

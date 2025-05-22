@@ -97,7 +97,7 @@ def kge(obs, pred):
 def compute_obj(input_dir, begin_date, end_date):
 
   # read VIC output data
-  output = open_dataset('vic_runoff.1979-01-01.nc')
+  output = open_dataset('vic_runoff.1992-01-01.nc') ######################################################################
   runoff_vic = output['OUT_RUNOFF'].isel(lon=0, lat=0) + output['OUT_BASEFLOW'].isel(lon=0, lat=0)
   # .resample(time='D').sum(['time', 'lat', 'lon'])
 
@@ -142,5 +142,5 @@ if __name__ == '__main__':
   updated_params = read_params()
   modify_params(updated_params)
   run_vic()
-  obj = compute_obj('input', pd.Timestamp('1981-01-01'), pd.Timestamp('2000-12-31'))
+  obj = compute_obj('input', pd.Timestamp('1992-01-01'), pd.Timestamp('1992-12-31'))
   write_output(obj)

@@ -22,19 +22,19 @@ import glob
 import os
 import sys
 
-yearstart = 1980
-yearend = 2019
-filesubinit = '1980-01-01'
+yearstart = 1992
+yearend = 1992
+filesubinit = '1992-01-01'
 
 
 def method(i: int = 1):
 
   # set dir for source wrf data
-  wrf_dir = '/rcfs/projects/cched/TGW-WRF/raw/historic_1980_2019/'
+  wrf_dir = '/people/sony061/tmp/foresight/forcings/raw/'
 
   # set dir for processed data
   # out_dir = '/qfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/'
-  out_dir = '/rcfs/projects/cched/TGW-WRF/historic_1980_2019/'
+  out_dir = '/people/sony061/tmp/foresight/forcings/'
 
   # set label to append to output files
   file_label = '00625vic'
@@ -155,7 +155,7 @@ def method(i: int = 1):
     # create a template dataset with 1/8 degree grid
     wrf_data_wgs84 = xr.Dataset(coords={'time': wrf_data.time.values, 'y': lat, 'x': lon, })
     wrf_data_wgs84.rio.write_crs(
-        'EPSG:4326', inplace=True
+        'EPSG:4269', inplace=True
     ).rio.set_spatial_dims(
         x_dim='x',
         y_dim='y',

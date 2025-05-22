@@ -4,15 +4,15 @@ os.environ['ESMFMKFILE'] = '/people/sony061/.conda/envs/xesmf_env/lib/esmf.mk'
 import xesmf as xe
 import xarray as xr
 
-runoff_data_dir = '/rcfs/projects/cched/VIC/runoff_GRFR'
-subset_output_dir = '/rcfs/projects/cched/VIC/runoff_GRFR'
-years = list(range(1995, 2004+1))
+runoff_data_dir = '/people/sony061/tmp/foresight/runoff'
+subset_output_dir = '/people/sony061/tmp/foresight/runoff'
+years = list(range(1995, 1995+1))
 
 # domain including conus and most of canada
 lon_slice = slice(-140, -55)
 lat_slice = slice(20, 70)
 
-na = xr.open_dataset('/rcfs/projects/cched/VIC/domain/namerica_params.nc')
+na = xr.open_dataset('/people/sony061/tmp/foresight/domain/namerica_params.nc')
 na_subset = na.sel(lon=lon_slice, lat=lat_slice)
 
 for year in years:

@@ -9,7 +9,7 @@ plots/
 references/
 ostrich/
 dPLHBVrelease/
-calibration/*
+#calibration/*
 params/*.nc
 qaqc/*.nc
 qaqc/*.txt

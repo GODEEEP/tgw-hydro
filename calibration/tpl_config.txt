@@ -1,0 +1,76 @@
+# ######################################################################
+# Simulation Parameters
+# ######################################################################
+MODEL_STEPS_PER_DAY   4  # number of model time steps in 24 hour period
+SNOW_STEPS_PER_DAY    4  # number of snow model time steps in 24 hour period
+RUNOFF_STEPS_PER_DAY  4  # number of runoff time steps in 24 hour period
+
+STARTYEAR             1995 # year model simulation starts
+STARTMONTH            1    # month model simulation starts
+STARTDAY              1    # day model simulation starts
+ENDYEAR               1995
+ENDMONTH              12
+ENDDAY                31
+CALENDAR              PROLEPTIC_GREGORIAN
+
+FULL_ENERGY           FALSE # calculate full energy balance
+FROZEN_SOIL           FALSE # calculate frozen soils
+
+# ######################################################################
+# DOMAIN INFO
+# ######################################################################
+DOMAIN namerica_domain_HUC06.nc
+DOMAIN_TYPE    LAT     lat
+DOMAIN_TYPE    LON     lon
+DOMAIN_TYPE    MASK    mask
+DOMAIN_TYPE    AREA    area
+DOMAIN_TYPE    FRAC    frac
+DOMAIN_TYPE    YDIM    lat
+DOMAIN_TYPE    XDIM    lon
+
+#######################################################################
+# State Files and Parameters
+#######################################################################
+INIT_STATE vic_state_HUC06.19960101_00000.nc
+STATENAME  vic_state_HUC06
+STATEYEAR  1996
+STATEMONTH 1
+STATEDAY   1
+STATESEC   0
+STATE_FORMAT NETCDF4
+
+# ######################################################################
+# Forcing Files and Parameters
+# netcdf forcing files will be of the form: <FORCING1>YYYY.nc
+# ######################################################################
+FORCING1      forcing/wrfout_HIST_06_00625vic_
+FORCE_TYPE    AIR_TEMP     T2      # Average air temperature, C
+FORCE_TYPE    PREC         PRECIP  # Total precipitation (rain and snow), kg/m2/s
+FORCE_TYPE    PRESSURE     PSFC    # Atmospheric pressure, Pa
+FORCE_TYPE    SWDOWN       SWDOWN  # Incoming shortwave, W/m2
+FORCE_TYPE    LWDOWN       GLW     # Incoming longwave radiation, W/m2
+FORCE_TYPE    VP           VP      # Vapor pressure, kPa
+FORCE_TYPE    WIND         WSPEED  # Wind speed, m/s
+
+# ######################################################################
+# Land Surface Files and Parameters
+# ######################################################################
+PARAMETERS          namerica_params_HUC06.nc
+SNOW_BAND           TRUE
+BASEFLOW            ARNO
+JULY_TAVG_SUPPLIED  FALSE
+LAI_SRC             FROM_VEGPARAM
+ALB_SRC             FROM_VEGPARAM
+FCAN_SRC            FROM_VEGPARAM
+ORGANIC_FRACT       FALSE
+NODES               3  # number of soil thermal nodes
+
+# ######################################################################
+# Output Files and Parameters
+# ######################################################################
+RESULT_DIR  ./
+OUTFILE     vic_runoff_HUC06
+AGGFREQ     NDAYS   1  # Write output every 1 day
+OUT_FORMAT  NETCDF4
+OUTVAR      OUT_RUNOFF
+OUTVAR      OUT_BASEFLOW

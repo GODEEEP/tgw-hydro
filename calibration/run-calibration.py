@@ -22,11 +22,11 @@ plim_ctr = [
     [8, 30],  # expt3: [8, 30], ['-20%', '20%']
 ]
 
-path_domain = '/people/sony061/tmp/foresight/domain/subset/namerica_domain_HUC{HUC}.nc' # VIC Domain for HUC
-path_params = '/people/sony061/tmp/foresight/domain/subset/namerica_params_HUC{HUC}.nc' # VIC Parameter for HUC
+path_domain = '/scratch/sony061/foresight/domain/subset/namerica_domain_HUC{HUC}.nc' # VIC Domain for HUC
+path_params = '/scratch/sony061/foresight/domain/subset/namerica_params_HUC{HUC}.nc' # VIC Parameter for HUC
 path_state = '' # VIC State for HUC
-path_forcings = '/people/sony061/tmp/foresight/forcings/{HUC}/tgw_wrf_historic_{HUC}_00625vic_{y}.nc' # VIC Forcing for HUC
-path_runoff = '/people/sony061/tmp/foresight/runoff/runoff_conus_16th_deg_{}.nc' # Target Runoff
+path_forcings = '/scratch/sony061/foresight/forcings/{HUC}/tgw_wrf_hist_{HUC}_00625vic_{y}.nc' # VIC Forcing for HUC
+path_runoff = '/scratch/sony061/foresight/runoff/runoff_conus_16th_deg_{}.nc' # Target Runoff
 
 # the period to use for calibration, first 2 years are spin up time
 calib_start_year = 1992

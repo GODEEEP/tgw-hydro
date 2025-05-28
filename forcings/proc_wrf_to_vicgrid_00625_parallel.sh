@@ -1,6 +1,6 @@
 #!/usr/bin/env /bin/bash
 
-nfiles=$(ls -1q /rcfs/projects/godeeep/shared_data/tgw_wrf/tgw_wrf_historic/hourly/*.nc | wc -l)
+nfiles=$(ls -1q /scratch/sony061/foresight/forcings/raw/hist/*.nc | wc -l)
 files_per_worker=$(expr 1 + ${nfiles} / ${SLURM_NTASKS})
 first=$(expr ${SLURM_PROCID} \* ${files_per_worker})
 last=$(expr ${first} + ${files_per_worker})

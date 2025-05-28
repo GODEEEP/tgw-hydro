@@ -7,9 +7,9 @@ import xarray as xr
 
 xr.set_options(keep_attrs = True)
 
-path_csv = '/people/sony061/tmp/foresight/domain/grid_ids_conus.csv'
-path_nc = '/people/sony061/tmp/foresight/forcings/tgw_wrf_historic_{year}_00625vic.nc'
-path_out = '/people/sony061/tmp/foresight/forcings/{HUC2:02d}/tgw_wrf_historic_{HUC2:02d}_00625vic_{year}.nc'
+path_csv = '/scratch/sony061/foresight/domain/grid_ids_conus.csv'
+path_nc = '/scratch/sony061/foresight/forcings/hist/tgw_wrf_hist_{year}_00625vic.nc'
+path_out = '/scratch/sony061/foresight/forcings/{HUC2:02d}/tgw_wrf_hist_{HUC2:02d}_00625vic_{year}.nc'
 
 flag_mask = False # if True, mask variables outside of HUC boundary, WARNINIG: Time-Consuming
 vars_mask = {} # if empty, iterate all variables in path_nc

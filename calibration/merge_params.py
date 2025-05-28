@@ -7,11 +7,11 @@ import xarray as xr
 #huc = int(sys.argv[1])
 huc = 6
 
-path_ref = f'/people/sony061/tmp/foresight/domain/subset/namerica_params_HUC{huc:02d}.nc' # initial parameter file for reference
-path_vic = f'/people/sony061/tmp/foresight/calibration/TGW-WRF/{huc:02d}' # calibration folder
+path_ref = f'/scratch/sony061/foresight/domain/subset/namerica_params_HUC{huc:02d}.nc' # initial parameter file for reference
+path_vic = f'/scratch/sony061/foresight/calibration/TGW-WRF/{huc:02d}' # calibration folder
 vic_filename = 'params_updated.nc' # calibrated output filename
 
-path_out = f'/people/sony061/tmp/foresight/calibration/TGW-WRF/namerica_params_HUC{huc:02d}_calib.nc' # merged parameter file
+path_out = f'/scratch/sony061/foresight/calibration/TGW-WRF/namerica_params_HUC{huc:02d}_calib.nc' # merged parameter file
 
 files_vic = glob.glob(os.path.join(path_vic, '**', vic_filename))
 files_vic.sort()

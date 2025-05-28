@@ -4,7 +4,7 @@ import os, shutil, stat
 
 model = 'TGW-WRF'
 
-path_forcings = '/people/sony061/tmp/foresight/forcings/{HUC}/'
+path_forcings = '/scratch/sony061/foresight/forcings/{HUC}/'
 
 dict_config = {
     'STARTYEAR': 1992,
@@ -14,7 +14,7 @@ dict_config = {
     'ENDMONTH': 12,
     'ENDDAY': 31,
     'DOMAIN': 'namerica_domain_HUC{HUC}.nc',
-    'FORCING1': 'forcings/tgw_wrf_historic_{HUC}_00625vic_',
+    'FORCING1': 'forcings/tgw_wrf_hist_{HUC}_00625vic_',
     'INIT_STATE': None,
     'STATENAME': None,
     'STATEYEAR': None,
@@ -30,19 +30,19 @@ dict_slurm = {
     'job-name': 'VIC-FINAL-{HUC}',
 }
 
-path_run = f'/people/sony061/tmp/foresight/calibration/{model}/finalrun'
-path_params = os.path.join(f'/people/sony061/tmp/foresight/calibration/{model}', 'namerica_params_HUC{HUC}_calib.nc')
+path_run = f'/scratch/sony061/foresight/calibration/{model}/finalrun'
+path_params = os.path.join(f'/scratch/sony061/foresight/calibration/{model}', 'namerica_params_HUC{HUC}_calib.nc')
 path_state = ''
 fn_config = 'config.txt'
 fn_slurm = 'run_vic.slurm'
 fn_bash = 'batch_slurm.sh'
 
-path_domain = '/people/sony061/tmp/foresight/domain/subset/namerica_domain_HUC{HUC}.nc'
+path_domain = '/scratch/sony061/foresight/domain/subset/namerica_domain_HUC{HUC}.nc'
 path_out = 'vic_runoff_HUC{HUC}'
 
-exec_vic = '/people/sony061/tmp/foresight/calibration/vic_image.exe'
-tpl_config = '/people/sony061/tmp/foresight/calibration/tpl_config.txt'
-tpl_slurm = '/people/sony061/tmp/foresight/calibration/tpl_run_vic.slurm'
+exec_vic = '/scratch/sony061/foresight/calibration/vic_image.exe'
+tpl_config = '/scratch/sony061/foresight/calibration/tpl_config.txt'
+tpl_slurm = '/scratch/sony061/foresight/calibration/tpl_run_vic.slurm'
 
 for huc in range(1, 19):
     huc_str = f'{huc:02d}'

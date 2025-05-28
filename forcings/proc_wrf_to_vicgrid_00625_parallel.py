@@ -27,14 +27,14 @@ yearend = 1992
 filesubinit = '1992-01-01'
 
 
-def method(i: int = 1):
+def method(i):
 
   # set dir for source wrf data
-  wrf_dir = '/people/sony061/tmp/foresight/forcings/raw/'
+  wrf_dir = '/scratch/sony061/foresight/forcings/raw/hist/'
 
   # set dir for processed data
   # out_dir = '/qfs/projects/godeeep/VIC/forcings/1_16_deg/CONUS_TGW_WRF_Historical/'
-  out_dir = '/people/sony061/tmp/foresight/forcings/'
+  out_dir = '/scratch/sony061/foresight/forcings/hist/'
 
   # set label to append to output files
   file_label = '00625vic'
@@ -211,9 +211,9 @@ def method(i: int = 1):
     file_out = out_dir + os.path.splitext(os.path.basename(wrf_file))[0] + '_' + file_label + '.nc'
     #wrf_data_out.to_netcdf(path=file_out)
     
-    wrf_data_out_6h = wrf_data_out.resample(time = '6H').mean()
-    wrf_data_out_6h['PRECIP'] = wrf_data_out['PRECIP'].resample(time = '6H').sum(skipna = False)
-    wrf_data_out_6h.to_netcdf(path=file_out.replace('hourly', '6hourly'))
+    wrf_data_out_6h = wrf_data_out.resample(time = '6H', closed = 'right', label = 'right').mean() ######################################################################
+    wrf_data_out_6h['PRECIP'] = wrf_data_out['PRECIP'].resample(time = '6H', closed = 'right', label = 'right').sum(skipna = False) ######################################################################
+    wrf_data_out_6h.to_netcdf(path=file_out.replace('hourly', '6hourly')) 
 
     # subset
     if subset_flag:

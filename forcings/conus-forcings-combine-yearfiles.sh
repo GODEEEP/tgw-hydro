@@ -27,11 +27,10 @@ year=${years[worker_index]}
 
 echo "Worker $SLURM_PROCID is processing year: $year"
 
-yearfile="/people/sony061/tmp/foresight/forcings/tgw_wrf_historic_${year}_00625vic.nc"
-
+yearfile="/people/sony061/tmp/foresight/forcings/tgw_wrf_hist_${year}_00625vic.nc"
 if [ ! -f "$yearfile" ]; then
   echo "Processing year $year: $yearfile"
-  cdo -w cat "/people/sony061/tmp/foresight/forcings/scratch/tgw_wrf_historic_6hourly_${year}-*_00625vic.nc" "$yearfile"
+  cdo -w cat "/people/sony061/tmp/foresight/forcings/scratch/tgw_wrf_historical_6hourly_${year}-*_00625vic.nc" "$yearfile"
   echo "Year $year processing complete"
 else
   echo "Year $year: $yearfile already exists. Skipping."

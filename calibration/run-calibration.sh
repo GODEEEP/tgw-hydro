@@ -2,8 +2,8 @@
 
 huc2=6
 
-csv_in=/people/sony061/tmp/foresight/domain/grid_ids_conus.csv
-path_out=/people/sony061/tmp/foresight/calibration/TGW-WRF/$(printf "%02d" $huc2)
+csv_in=/scratch/sony061/foresight/domain/grid_ids_conus.csv
+path_out=/scratch/sony061/foresight/calibration/TGW-WRF/$(printf "%02d" $huc2)
 
 # huc2      n first_id last_id
 # 01     5755        1    5755
